@@ -425,8 +425,9 @@ export default function UsersPage() {
                     <Progress
                       value={user.engagement}
                       className="h-2 w-20"
+                      indicatorClassName="bg-[#0F744F]"
                     />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm">
                       {user.engagement}%
                     </span>
                   </div>
@@ -439,7 +440,7 @@ export default function UsersPage() {
                       className="h-8 w-8"
                       onClick={() => handleView(user)}
                     >
-                      <Eye className="h-4 w-4 text-gray-500" />
+                      <Eye className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
                     <Button
                       variant="ghost"
@@ -447,7 +448,7 @@ export default function UsersPage() {
                       className="h-8 w-8"
                       onClick={() => handleEdit(user)}
                     >
-                      <Pencil className="h-4 w-4 text-gray-500" />
+                      <Pencil className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
                     <Button
                       variant="ghost"

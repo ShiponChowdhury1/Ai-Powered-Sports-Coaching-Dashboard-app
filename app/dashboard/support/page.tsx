@@ -162,11 +162,7 @@ export default function SupportPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={
-          <>
-            Support & <span style={{ color: "rgba(15, 116, 79, 0.68)" }}>Engagement</span>
-          </>
-        }
+        title="Support & Engagement"
         description="Manage support tickets and user engagement"
       />
 
