@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 
 export function Topbar() {
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-[#E5E7EB] bg-white px-6">
       {/* Search */}
       <div className="flex items-center flex-1 max-w-xl">
         <div className="relative w-full">

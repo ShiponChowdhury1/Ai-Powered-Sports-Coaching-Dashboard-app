@@ -50,9 +50,9 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-[240px] flex-col border-r bg-white">
+    <div className="flex h-full w-[240px] flex-col border-r border-[#E5E7EB] bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b border-[#E5E7EB] px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-xl font-bold text-gray-900">Mait</span>
           <span className="text-xl font-bold text-emerald-600">Club</span>
@@ -93,7 +93,7 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Status */}
-      <div className="border-t p-4">
+      <div className="border-t border-[#E5E7EB] p-4">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
           All Systems Operational

@@ -408,7 +408,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 {integrationSettings.stripeEnabled && (
-                  <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                  <div className="space-y-2 pl-4 border-l-2 border-[#E5E7EB]">
                     <Label>Stripe API Key</Label>
                     <Input
                       type="password"

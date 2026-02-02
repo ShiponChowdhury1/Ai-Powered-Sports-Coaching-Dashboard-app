@@ -289,7 +289,7 @@ export default function TrainingPage() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#E5E7EB]">
                 {item.hasVideo ? (
                   <div className="flex items-center gap-1.5 text-emerald-600">
                     <Video className="h-4 w-4" />
@@ -316,6 +316,19 @@ export default function TrainingPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label>Type</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Drill">Drill</SelectItem>
+                  <SelectItem value="Training Plan">Training Plan</SelectItem>
+                  <SelectItem value="Correction">Correction</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>Title</Label>
               <Input placeholder="Enter content title" />
             </div>
@@ -325,17 +338,8 @@ export default function TrainingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Category</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Drill">Drill</SelectItem>
-                    <SelectItem value="Training Plan">Training Plan</SelectItem>
-                    <SelectItem value="Correction">Correction</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Target Skill</Label>
+                <Input placeholder="e.g., Driver, Putting" />
               </div>
               <div className="space-y-2">
                 <Label>Difficulty</Label>
@@ -351,33 +355,16 @@ export default function TrainingPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Sport</Label>
-                <Input placeholder="e.g., Golf" />
-              </div>
-              <div className="space-y-2">
-                <Label>Target Skill</Label>
-                <Input placeholder="e.g., Driver" />
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label>Upload Video (Optional)</Label>
-              <div className="flex items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer hover:bg-gray-50">
-                <div className="text-center">
-                  <Upload className="h-8 w-8 mx-auto text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">
-                    Click to upload or drag and drop
-                  </p>
-                </div>
-              </div>
+              <Label>Reference Video URL</Label>
+              <Input placeholder="https://..." />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex gap-3">
+            <Button className="bg-[#1D4ED8] hover:bg-[#1e40af] flex-1">Create Content</Button>
             <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
               Cancel
             </Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">Create Content</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

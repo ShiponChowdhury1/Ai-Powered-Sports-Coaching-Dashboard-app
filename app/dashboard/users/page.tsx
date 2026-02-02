@@ -355,7 +355,7 @@ export default function UsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-lg border border-[#E5E7EB] bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -623,11 +623,11 @@ export default function UsersPage() {
               </Select>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex gap-3">
+            <Button onClick={saveEdit} className="bg-[#1D4ED8] hover:bg-[#1e40af] flex-1">Save Changes</Button>
             <Button variant="outline" onClick={() => setEditModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={saveEdit}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

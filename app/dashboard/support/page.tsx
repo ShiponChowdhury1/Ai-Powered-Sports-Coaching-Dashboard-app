@@ -166,38 +166,6 @@ export default function SupportPage() {
         description="Manage support tickets and user engagement"
       />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Tickets"
-          value={stats.total}
-          icon={MessageSquare}
-          iconColor="text-blue-600"
-          iconBgColor="bg-blue-50"
-        />
-        <StatsCard
-          title="Open"
-          value={stats.open}
-          icon={AlertCircle}
-          iconColor="text-yellow-600"
-          iconBgColor="bg-yellow-50"
-        />
-        <StatsCard
-          title="In Progress"
-          value={stats.inProgress}
-          icon={Clock}
-          iconColor="text-orange-600"
-          iconBgColor="bg-orange-50"
-        />
-        <StatsCard
-          title="Resolved"
-          value={stats.resolved}
-          icon={CheckCircle}
-          iconColor="text-emerald-600"
-          iconBgColor="bg-emerald-50"
-        />
-      </div>
-
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -230,7 +198,7 @@ export default function SupportPage() {
       </div>
 
       {/* Tickets Table */}
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-lg border border-[#E5E7EB] bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -358,7 +326,7 @@ export default function SupportPage() {
                   </p>
                 </div>
               </div>
-              <div className="border-t pt-4">
+              <div className="border-t border-[#E5E7EB] pt-4">
                 <p className="text-sm font-medium text-gray-700 mb-2">
                   Send Response
                 </p>
@@ -366,12 +334,17 @@ export default function SupportPage() {
                   placeholder="Type your response..."
                   value={responseText}
                   onChange={(e) => setResponseText(e.target.value)}
-                  className="mb-2"
+                  className="mb-3"
                 />
-                <Button className="gap-2">
-                  <Send className="h-4 w-4" />
-                  Send Response
-                </Button>
+                <div className="flex gap-3">
+                  <Button className="gap-2 bg-[#1D4ED8] hover:bg-[#1e40af] flex-1">
+                    <Send className="h-4 w-4" />
+                    Send Response
+                  </Button>
+                  <Button variant="outline" onClick={() => setViewModalOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
           )}

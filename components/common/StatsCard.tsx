@@ -22,7 +22,7 @@ export function StatsCard({
   iconBgColor = "bg-emerald-50",
 }: StatsCardProps) {
   return (
-    <Card>
+    <Card className="border-[#E5E7EB]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-gray-500">
           {title}

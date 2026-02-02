@@ -138,7 +138,7 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* User Growth Chart */}
-        <Card>
+        <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               User Growth (1 Years)
@@ -170,7 +170,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Video Uploads Chart */}
-        <Card>
+        <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               Video Upload (1 Years)
@@ -199,7 +199,7 @@ export default function DashboardPage() {
       {/* Bottom Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Subscription Distribution */}
-        <Card>
+        <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               Subscription Distribution
@@ -227,7 +227,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Quick Actions */}
-        <Card>
+        <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
           </CardHeader>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
             {quickActions.map((action) => (
               <div
                 key={action.id}
-                className="flex items-center justify-between rounded-lg border p-4"
+                className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-4"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
