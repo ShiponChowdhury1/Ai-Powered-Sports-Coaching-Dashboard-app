@@ -19,7 +19,7 @@ interface TopbarProps {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-[#E5E7EB] bg-white px-3 sm:px-4 md:px-6">
+    <header className="flex h-[97px] items-center justify-between border-b-[1.11px] border-[#E5E7EB] bg-[#FFFFFF] px-6">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
@@ -68,10 +68,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-[222px] bg-[#FFFFFF] border-[#E5E7EB]">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
+      
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-red-600">Log out</DropdownMenuItem>
