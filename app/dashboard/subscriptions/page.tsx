@@ -250,7 +250,7 @@ export default function SubscriptionsPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Monthly Revenue */}
         <Card className="bg-white border-[#E5E7EB]">
           <CardContent className="p-4">
@@ -318,7 +318,7 @@ export default function SubscriptionsPage() {
           <CardTitle className="text-base font-semibold">Revenue Trend (1 Year)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative h-[250px] w-full">
+          <div className="relative h-[200px] sm:h-[250px] w-full overflow-x-auto">
             {/* Y-axis labels */}
             <div className="absolute left-0 top-0 flex h-[200px] flex-col justify-between text-xs text-gray-400">
               <span>100000</span>
@@ -410,7 +410,7 @@ export default function SubscriptionsPage() {
       {/* Subscription Plans */}
       <div>
         <h2 className="mb-4 text-lg font-semibold text-gray-900">Subscription Plans</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <Card 
               key={plan.id} 
@@ -499,8 +499,8 @@ export default function SubscriptionsPage() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">Recent Transactions</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
+        <CardContent className="p-0 overflow-x-auto">
+          <Table className="min-w-[700px]">
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-[#E5E7EB]">
                 <TableHead className="text-xs font-medium uppercase text-gray-500">

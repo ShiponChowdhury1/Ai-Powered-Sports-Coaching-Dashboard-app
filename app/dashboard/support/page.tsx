@@ -167,14 +167,14 @@ export default function SupportPage() {
       />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Button variant="outline" size="sm" className="gap-2">
             <Filter className="h-4 w-4" />
             Filters
           </Button>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[130px] sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -186,20 +186,20 @@ export default function SupportPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Search tickets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[300px] pl-10"
+            className="w-full sm:w-[250px] lg:w-[300px] pl-10"
           />
         </div>
       </div>
 
       {/* Tickets Table */}
-      <div className="rounded-lg border border-[#E5E7EB] bg-white">
-        <Table>
+      <div className="rounded-lg border border-[#E5E7EB] bg-white overflow-x-auto">
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
               <TableHead className="text-xs font-medium uppercase text-gray-500">

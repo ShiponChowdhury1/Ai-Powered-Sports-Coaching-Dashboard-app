@@ -34,7 +34,7 @@ export function StatsCard({
         )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
+        <div className="text-xl sm:text-2xl font-bold text-gray-900">{value}</div>
         {change !== undefined && (
           <p
             className={cn(

@@ -48,19 +48,19 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="flex gap-6 min-h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-screen bg-gray-50">
       {/* Left Sidebar */}
-      <div className="w-80 bg-white rounded-lg p-6 space-y-6 h-fit">
+      <div className="w-full lg:w-80 bg-[#FFFFFF] rounded-xl p-4 lg:p-6 space-y-4 lg:space-y-6 h-fit shadow-sm border border-[#E5E7EB]">
         {/* Profile Section */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 lg:space-y-4">
           <div className="flex justify-center">
-            <Avatar className="w-32 h-32">
+            <Avatar className="w-24 h-24 lg:w-32 lg:h-32">
               <AvatarImage src={adminInfo.profilePicture} alt="Admin" />
               <AvatarFallback>DW</AvatarFallback>
             </Avatar>
           </div>
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">Dexter Watts</h2>
+            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900">Dexter Watts</h2>
             <p className="text-sm text-gray-600 mt-1">Update your store details and branding</p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 bg-white rounded-lg p-8">
+      <div className="flex-1 bg-white rounded-lg p-4 sm:p-6 lg:p-8">
         {activeTab === "admin-info" && (
           <div className="space-y-6">
             <div>
@@ -124,7 +124,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setAdminInfo({ ...adminInfo, fullName: e.target.value })
                   }
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setAdminInfo({ ...adminInfo, email: e.target.value })
                   }
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
@@ -154,12 +154,12 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setAdminInfo({ ...adminInfo, phone: e.target.value })
                   }
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
               <div className="flex justify-center pt-4">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-2 rounded-lg">
+                <Button className="w-[226px] h-[52px] bg-emerald-600 hover:bg-emerald-700 text-white px-[82px] py-[14px] rounded-xl">
                   Confirm
                 </Button>
               </div>
@@ -183,7 +183,7 @@ export default function SettingsPage() {
                   id="currentPassword"
                   type="password"
                   placeholder="Enter current password"
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
@@ -195,7 +195,7 @@ export default function SettingsPage() {
                   id="newPassword"
                   type="password"
                   placeholder="Enter new password"
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
@@ -207,12 +207,12 @@ export default function SettingsPage() {
                   id="confirmPassword"
                   type="password"
                   placeholder="Confirm new password"
-                  className="bg-white border-gray-300"
+                  className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
                 />
               </div>
 
               <div className="flex justify-center pt-4">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-2 rounded-lg">
+                <Button className="w-[226px] h-[52px] bg-emerald-600 hover:bg-emerald-700 text-white px-[82px] py-[14px] rounded-xl">
                   Update Password
                 </Button>
               </div>
@@ -401,7 +401,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Editor Toolbar */}
-            <div className="bg-gray-100 rounded-lg p-2 flex items-center gap-1">
+            <div className="bg-gray-100 rounded-lg p-2 flex flex-wrap items-center gap-1">
               <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">H</button>
               <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">B</button>
               <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Italic className="h-4 w-4" /></button>

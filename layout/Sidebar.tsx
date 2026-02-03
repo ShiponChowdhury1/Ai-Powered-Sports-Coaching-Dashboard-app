@@ -9,9 +9,11 @@ import {
   BookOpen,
   MessageSquare,
   Settings,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 const sidebarItems = [
   {
@@ -46,17 +48,31 @@ const sidebarItems = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <div className="flex h-full w-[240px] flex-col border-r border-[#E5E7EB] bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-[#E5E7EB] px-6">
+      <div className="flex h-16 items-center justify-between border-b border-[#E5E7EB] px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-xl font-bold text-gray-900">Mait</span>
           <span className="text-xl font-bold text-emerald-600">Club</span>
         </Link>
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -73,11 +89,12 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-[10px] pl-4 text-sm font-medium transition-colors w-[223px] h-[44px]",
+                  "flex items-center gap-3 rounded-[10px] pl-4 text-sm font-medium transition-colors w-full h-[44px]",
                   isActive
                     ? "bg-[#E1EDED] text-emerald-700"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 )}
+                onClick={onClose}
               >
                 <Icon
                   className={cn(
