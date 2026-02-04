@@ -9,6 +9,11 @@ import { ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useSendOtpMutation } from "@/store/api/authApi";
+import { useAppDispatch } from "@/store/hooks";
+import { setForgotPasswordEmail } from "@/features/auth/authSlice";
+import { toast } from "react-toastify";
+import type { ApiError } from "@/types/auth.types";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -18,22 +23,29 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [sendOtp, { isLoading }] = useSendOtpMutation();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
-      console.log("Forgot password data:", data);
-      // Add your forgot password API call here
-      router.push("/auth/verify-email");
+      const result = await sendOtp({ email: data.email }).unwrap();
+      
+      // Store email for OTP verification
+      dispatch(setForgotPasswordEmail(data.email));
+      
+      toast.success(result.message || "OTP sent to your email!");
+      router.push("/auth/verify-otp");
     } catch (error) {
-      console.error("Forgot password error:", error);
+      const apiError = error as ApiError;
+      toast.error(apiError.data?.message || "Failed to send OTP. Please try again.");
     }
   };
 
@@ -50,7 +62,7 @@ export default function ForgotPasswordPage() {
           Forgot Password
         </h1>
         <p className="text-gray-600">
-          Enter your email address and we&apos;ll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you an OTP to reset your password.
         </p>
       </div>
 
@@ -76,10 +88,10 @@ export default function ForgotPasswordPage() {
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isLoading}
           className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base"
         >
-          {isSubmitting ? "Sending..." : "Send Reset Link"}
+          {isLoading ? "Sending..." : "Send OTP"}
         </Button>
 
         {/* Back to Login */}

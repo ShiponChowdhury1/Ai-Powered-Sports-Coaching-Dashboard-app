@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,6 +10,11 @@ import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useResetPasswordMutation } from "@/store/api/authApi";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { clearForgotPasswordEmail } from "@/features/auth/authSlice";
+import { toast } from "react-toastify";
+import type { ApiError } from "@/types/auth.types";
 
 const resetPasswordSchema = z
   .object({
@@ -25,26 +30,54 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const forgotPasswordEmail = useAppSelector((state) => state.auth.forgotPasswordEmail);
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+
+  // Redirect if no email stored
+  useEffect(() => {
+    if (!forgotPasswordEmail) {
+      router.push("/auth/forgot-password");
+    }
+  }, [forgotPasswordEmail, router]);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
 
   const onSubmit = async (data: ResetPasswordFormData) => {
+    if (!forgotPasswordEmail) return;
+    
     try {
-      console.log("Reset password data:", data);
-      // Add your reset password API call here
+      const result = await resetPassword({
+        email: forgotPasswordEmail,
+        password: data.password,
+      }).unwrap();
+      
+      toast.success(result.message || "Your password has been reset successfully!");
+      
+      // Clear forgot password email and redirect to login
       router.push("/auth/login");
+      setTimeout(() => {
+        dispatch(clearForgotPasswordEmail());
+      }, 100);
     } catch (error) {
-      console.error("Reset password error:", error);
+      const apiError = error as ApiError;
+      toast.error(apiError.data?.message || "Failed to reset password. Please try again.");
     }
   };
+
+  if (!forgotPasswordEmail) {
+    return null;
+  }
 
   return (
     <div
@@ -128,10 +161,10 @@ export default function ResetPasswordPage() {
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isLoading}
           className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base"
         >
-          {isSubmitting ? "Resetting..." : "Reset Password"}
+          {isLoading ? "Resetting..." : "Reset Password"}
         </Button>
 
         {/* Back to Login */}

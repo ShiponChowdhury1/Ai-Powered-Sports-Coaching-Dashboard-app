@@ -12,37 +12,116 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useLoginMutation, useGoogleLoginMutation } from "@/store/api/authApi";
+import type { ApiError } from "@/types/auth.types";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/features/auth/authSlice";
+import { toast } from "react-toastify";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  const [login, { isLoading }] = useLoginMutation();
+  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    setError,
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      console.log("Login data:", data);
-      // Add your login API call here
+      const result = await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
+      
+      // Check if user is admin
+      if (result.user && result.user.role !== "ADMIN") {
+        toast.error("Only admin users can access the dashboard.");
+        return;
+      }
+      
+      // Store tokens and user in Redux and localStorage
+      dispatch(setCredentials({
+        accessToken: result.access_token,
+        refreshToken: result.refresh_token,
+        user: result.user || {
+          email: data.email,
+          name: "Admin",
+          role: "ADMIN",
+        },
+      }));
+      
+      toast.success(result.message || "Logged in successfully!");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Login error:", error);
+      const apiError = error as ApiError;
+      
+      if (apiError.data?.errors) {
+        const errors = apiError.data.errors;
+        if (errors.email) {
+          setError("email", { message: errors.email[0] });
+        }
+        if (errors.password) {
+          setError("password", { message: errors.password[0] });
+        }
+      } else {
+        toast.error(apiError.data?.message || "Invalid email or password.");
+      }
     }
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const result = await googleLogin({
+          access_token: tokenResponse.access_token,
+        }).unwrap();
+        
+        // Check if user is admin
+        if (result.user && result.user.role !== "ADMIN") {
+          toast.error("Only admin users can access the dashboard.");
+          return;
+        }
+        
+        // Store tokens and user in Redux and localStorage
+        dispatch(setCredentials({
+          accessToken: result.access_token,
+          refreshToken: result.refresh_token,
+          user: result.user || {
+            email: "",
+            name: "Admin",
+            role: "ADMIN",
+          },
+        }));
+        
+        toast.success(result.message || "Logged in successfully with Google!");
+        router.push("/dashboard");
+      } catch (error) {
+        const apiError = error as ApiError;
+        toast.error(apiError.data?.message || "Google login failed. Please try again.");
+      }
+    },
+    onError: () => {
+      toast.error("Google login failed. Please try again.");
+    },
+  });
 
   return (
     <div
@@ -142,10 +221,10 @@ export default function LoginPage() {
         {/* Login Button */}
         <Button
           type="submit"
-          disabled={isSubmitting || !agreedToTerms}
+          disabled={isLoading || !agreedToTerms}
           className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base"
         >
-          {isSubmitting ? "Logging in..." : "Login"}
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
 
         {/* Sign Up Link */}
@@ -173,7 +252,7 @@ export default function LoginPage() {
           <button
             type="button"
             className="flex-1 h-[48px] flex items-center justify-center gap-3 bg-white border border-[#E5E7EB] rounded-xl hover:bg-gray-50 transition-colors"
-            onClick={() => console.log("Google login")}
+            onClick={() => handleGoogleLogin()}
           >
             <Image
               src="/auth/search.png"

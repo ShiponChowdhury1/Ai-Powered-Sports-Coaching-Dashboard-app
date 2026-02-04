@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -13,10 +13,22 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAppDispatch } from "@/store/hooks";
+import { logout } from "@/features/auth/authSlice";
+import { toast } from "react-toastify";
 
 const sidebarItems = [
   {
@@ -57,9 +69,19 @@ interface SidebarProps {
 
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logged out successfully!");
+    router.push("/auth/login");
+  };
 
   return (
+    <>
     <div className={cn(
       "flex h-full flex-col border-r-[1.11px] border-[#E5E7EB] bg-[#FFFFFF] transition-all duration-300",
       isCollapsed ? "w-[80px]" : "w-[256px]"
@@ -141,16 +163,53 @@ export function Sidebar({ onClose }: SidebarProps) {
       {/* Status */}
       <div className="border-t border-[#E5E7EB] p-4">
         {!isCollapsed ? (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            All Systems Operational
-          </div>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 w-full px-2 py-2 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="h-5 w-5" />
+            Logout
+          </button>
         ) : (
-          <div className="flex justify-center">
-            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-          </div>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="flex justify-center w-full p-2 rounded-lg hover:bg-red-50 transition-colors"
+            title="Logout"
+          >
+            <LogOut className="h-5 w-5 text-red-600" />
+          </button>
         )}
       </div>
     </div>
+
+    {/* Logout Confirmation Modal */}
+    <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
+      <DialogContent className="sm:max-w-[400px] bg-white">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            Confirm Logout
+          </DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Are you sure you want to logout? You will be redirected to the login page.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            onClick={() => setShowLogoutModal(false)}
+            className="border-[#E5E7EB]"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Logout
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

@@ -1,27 +1,33 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useVerifyOtpMutation, useSendOtpMutation } from "@/store/api/authApi";
+import type { ApiError } from "@/types/auth.types";
+import { useAppSelector } from "@/store/hooks";
+import { toast } from "react-toastify";
 
-const verifyEmailSchema = z.object({
-  otp: z.string().length(6, "OTP must be 6 digits"),
-});
-
-type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
-
-export default function VerifyEmailPage() {
+export default function VerifyOtpPage() {
   const router = useRouter();
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const forgotPasswordEmail = useAppSelector((state) => state.auth.forgotPasswordEmail);
+  
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+  const [sendOtp, { isLoading: isResending }] = useSendOtpMutation();
+
+  // Redirect if no email stored
+  useEffect(() => {
+    if (!forgotPasswordEmail) {
+      router.push("/auth/forgot-password");
+    }
+  }, [forgotPasswordEmail, router]);
 
   // Countdown timer for resend
   useEffect(() => {
@@ -42,7 +48,7 @@ export default function VerifyEmailPage() {
     setOtp(newOtp);
 
     // Auto-focus next input
-    if (value && index < 5) {
+    if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -56,17 +62,17 @@ export default function VerifyEmailPage() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 6);
+    const pastedData = e.clipboardData.getData("text").slice(0, 4);
     if (!/^\d+$/.test(pastedData)) return;
 
     const newOtp = [...otp];
     pastedData.split("").forEach((char, index) => {
-      if (index < 6) newOtp[index] = char;
+      if (index < 4) newOtp[index] = char;
     });
     setOtp(newOtp);
 
     // Focus the last filled input or the next empty one
-    const focusIndex = Math.min(pastedData.length, 5);
+    const focusIndex = Math.min(pastedData.length, 3);
     inputRefs.current[focusIndex]?.focus();
   };
 
@@ -74,38 +80,45 @@ export default function VerifyEmailPage() {
     e.preventDefault();
     const otpString = otp.join("");
 
-    if (otpString.length !== 6) {
+    if (otpString.length !== 4 || !forgotPasswordEmail) {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      console.log("OTP submitted:", otpString);
-      // Add your verify email API call here
-      router.push("/auth/login");
+      const result = await verifyOtp({
+        email: forgotPasswordEmail,
+        otp: otpString,
+      }).unwrap();
+      
+      toast.success(result.message || "OTP verified successfully!");
+      router.push("/auth/reset-password");
     } catch (error) {
-      console.error("Verification error:", error);
-    } finally {
-      setIsSubmitting(false);
+      const apiError = error as ApiError;
+      toast.error(apiError.data?.message || "Invalid OTP. Please try again.");
     }
   };
 
   const handleResend = async () => {
-    if (!canResend) return;
+    if (!canResend || !forgotPasswordEmail) return;
     
     try {
-      console.log("Resending OTP...");
-      // Add your resend OTP API call here
+      const result = await sendOtp({ email: forgotPasswordEmail }).unwrap();
       setResendTimer(60);
       setCanResend(false);
-      setOtp(["", "", "", "", "", ""]);
+      setOtp(["", "", "", ""]);
       inputRefs.current[0]?.focus();
+      toast.success(result.message || "OTP resent to your email!");
     } catch (error) {
-      console.error("Resend error:", error);
+      const apiError = error as ApiError;
+      toast.error(apiError.data?.message || "Failed to resend OTP. Please try again.");
     }
   };
 
   const isOtpComplete = otp.every((digit) => digit !== "");
+
+  if (!forgotPasswordEmail) {
+    return null;
+  }
 
   return (
     <div
@@ -117,13 +130,14 @@ export default function VerifyEmailPage() {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-[#E8F5F0] rounded-full flex items-center justify-center mx-auto mb-4">
-          <Mail className="w-8 h-8 text-[#0F744F]" />
+          <KeyRound className="w-8 h-8 text-[#0F744F]" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          Verify Your Email
+          Verify OTP
         </h1>
         <p className="text-gray-600">
-          We&apos;ve sent a 6-digit verification code to your email address.
+          We&apos;ve sent a 4-digit verification code to{" "}
+          <span className="font-medium text-gray-900">{forgotPasswordEmail}</span>
         </p>
       </div>
 
@@ -152,10 +166,10 @@ export default function VerifyEmailPage() {
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting || !isOtpComplete}
+          disabled={isLoading || !isOtpComplete}
           className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Verifying..." : "Verify Email"}
+          {isLoading ? "Verifying..." : "Verify OTP"}
         </Button>
 
         {/* Resend Section */}
@@ -166,9 +180,10 @@ export default function VerifyEmailPage() {
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-[#0F744F] font-medium hover:underline"
+                disabled={isResending}
+                className="text-[#0F744F] font-medium hover:underline disabled:opacity-50"
               >
-                Resend Code
+                {isResending ? "Resending..." : "Resend Code"}
               </button>
             ) : (
               <span className="text-gray-400">
@@ -178,14 +193,14 @@ export default function VerifyEmailPage() {
           </p>
         </div>
 
-        {/* Back to Login */}
+        {/* Back to Forgot Password */}
         <div className="text-center pt-2">
           <Link
-            href="/auth/login"
+            href="/auth/forgot-password"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            Back to Forgot Password
           </Link>
         </div>
       </form>
