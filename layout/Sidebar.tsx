@@ -18,6 +18,8 @@ import {
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useGetProfileQuery } from "@/store/api/profileApi";
 import {
   Dialog,
   DialogContent,
@@ -71,6 +73,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { data: profile } = useGetProfileQuery();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -160,8 +163,22 @@ export function Sidebar({ onClose }: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      {/* Status */}
-      <div className="border-t border-[#E5E7EB] p-4">
+      {/* Profile Section */}
+      <div className="border-t border-[#E5E7EB] p-4 space-y-3">
+        {!isCollapsed && profile && (
+          <div className="flex items-center gap-3 px-2">
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={profile.image} alt={profile.name} />
+              <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                {profile.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{profile.name}</p>
+              <p className="text-xs text-gray-500 truncate">{profile.email}</p>
+            </div>
+          </div>
+        )}
         {!isCollapsed ? (
           <button
             onClick={() => setShowLogoutModal(true)}
@@ -190,10 +207,10 @@ export function Sidebar({ onClose }: SidebarProps) {
             Confirm Logout
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Are you sure you want to logout? You will be redirected to the login page.
+            Are you sure you want to logout? 
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-3">
           <Button
             variant="outline"
             onClick={() => setShowLogoutModal(false)}

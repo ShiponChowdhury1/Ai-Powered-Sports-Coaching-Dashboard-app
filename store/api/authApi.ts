@@ -9,6 +9,8 @@ import type {
   VerifyOtpResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
 } from "@/types/auth.types";
 
 export const authApi = baseApi.injectEndpoints({
@@ -77,6 +79,19 @@ export const authApi = baseApi.injectEndpoints({
         },
       }),
     }),
+
+    // Change Password
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+      query: (data) => ({
+        url: "/accounts/change-password/",
+        method: "POST",
+        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      }),
+    }),
   }),
 });
 
@@ -86,5 +101,5 @@ export const {
   useSendOtpMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,
-} = authApi;
+  useChangePasswordMutation,
 } = authApi;

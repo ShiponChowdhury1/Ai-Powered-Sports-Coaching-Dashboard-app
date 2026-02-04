@@ -14,7 +14,7 @@ export default function VerifyOtpPage() {
   const router = useRouter();
   const forgotPasswordEmail = useAppSelector((state) => state.auth.forgotPasswordEmail);
   
-  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -48,7 +48,7 @@ export default function VerifyOtpPage() {
     setOtp(newOtp);
 
     // Auto-focus next input
-    if (value && index < 3) {
+    if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -62,17 +62,17 @@ export default function VerifyOtpPage() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 4);
+    const pastedData = e.clipboardData.getData("text").slice(0, 6);
     if (!/^\d+$/.test(pastedData)) return;
 
     const newOtp = [...otp];
     pastedData.split("").forEach((char, index) => {
-      if (index < 4) newOtp[index] = char;
+      if (index < 6) newOtp[index] = char;
     });
     setOtp(newOtp);
 
     // Focus the last filled input or the next empty one
-    const focusIndex = Math.min(pastedData.length, 3);
+    const focusIndex = Math.min(pastedData.length, 5);
     inputRefs.current[focusIndex]?.focus();
   };
 
@@ -80,7 +80,7 @@ export default function VerifyOtpPage() {
     e.preventDefault();
     const otpString = otp.join("");
 
-    if (otpString.length !== 4 || !forgotPasswordEmail) {
+    if (otpString.length !== 6 || !forgotPasswordEmail) {
       return;
     }
 
@@ -105,7 +105,7 @@ export default function VerifyOtpPage() {
       const result = await sendOtp({ email: forgotPasswordEmail }).unwrap();
       setResendTimer(60);
       setCanResend(false);
-      setOtp(["", "", "", ""]);
+      setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
       toast.success(result.message || "OTP resent to your email!");
     } catch (error) {
@@ -136,7 +136,7 @@ export default function VerifyOtpPage() {
           Verify OTP
         </h1>
         <p className="text-gray-600">
-          We&apos;ve sent a 4-digit verification code to{" "}
+          We&apos;ve sent a 6-digit verification code to{" "}
           <span className="font-medium text-gray-900">{forgotPasswordEmail}</span>
         </p>
       </div>

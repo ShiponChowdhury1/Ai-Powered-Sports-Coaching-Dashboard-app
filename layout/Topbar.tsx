@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -13,6 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +30,10 @@ import {
 } from "@/components/ui/dialog";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/features/auth/authSlice";
-import { toast } from "react-toastify";
+import { useGetProfileQuery } from "@/store/api/profileApi";
+import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/store/api/notificationsApi";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 interface TopbarProps {
   onMenuClick?: () => void;
@@ -34,12 +43,28 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const { data: profile } = useGetProfileQuery();
+  const { data: notifications = [], refetch: refetchNotifications } = useGetNotificationsQuery({ unreadOnly: true });
+  const [markAsRead] = useMarkAsReadMutation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
     toast.success("Logged out successfully!");
     router.push("/auth/login");
+  };
+
+  const handleNotificationClick = async (notificationId: number, link: string | null) => {
+    try {
+      await markAsRead(notificationId).unwrap();
+      if (link) {
+        window.open(link, "_blank");
+      }
+      refetchNotifications();
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
   };
 
   // Get user initials for avatar
@@ -80,11 +105,18 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       {/* Right side */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative"
+          onClick={() => setShowNotifications(true)}
+        >
           <Bell className="h-5 w-5 text-gray-600" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
-            3
-          </span>
+          {notifications.length > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+              {notifications.length}
+            </span>
+          )}
         </Button>
 
         {/* User Menu */}
@@ -92,14 +124,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
               <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                <AvatarImage src="/avatars/admin.png" alt={user?.name || "Admin"} />
+                <AvatarImage src={profile?.image} alt={profile?.name || user?.name || "Admin"} />
                 <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                  {user?.name ? getInitials(user.name) : "AD"}
+                  {profile?.name ? getInitials(profile.name) : user?.name ? getInitials(user.name) : "AD"}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden sm:flex flex-col items-start text-sm">
-                <span className="font-medium text-gray-900">{user?.name || "Admin"}</span>
-                <span className="text-xs text-gray-500">{user?.email || "admin@sportcoach.ai"}</span>
+                <span className="font-medium text-gray-900">{profile?.name || user?.name || "Admin"}</span>
+                <span className="text-xs text-gray-500">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -121,6 +153,57 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       </div>
     </header>
 
+    {/* Notifications Sheet */}
+    <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
+      <SheetContent className="w-full sm:max-w-[400px] bg-white">
+        <SheetHeader>
+          <SheetTitle className="text-xl font-semibold">Notifications</SheetTitle>
+        </SheetHeader>
+        <div className="mt-6 space-y-2">
+          {notifications.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No new notifications
+            </div>
+          ) : (
+            <>
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification.id, notification.link)}
+                  className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                    notification.priority === "HIGH" 
+                      ? "bg-blue-50 hover:bg-blue-100" 
+                      : "bg-white hover:bg-gray-50"
+                  } border border-gray-200`}
+                >
+                  <h4 className="font-medium text-gray-900 text-sm">
+                    {notification.title}
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {notification.message}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                  </p>
+                </div>
+              ))}
+              <div className="pt-4 text-center">
+                <button
+                  onClick={() => {
+                    router.push("/dashboard/notifications");
+                    setShowNotifications(false);
+                  }}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  View all notifications
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+
     {/* Logout Confirmation Modal */}
     <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
       <DialogContent className="sm:max-w-[400px] bg-white">
@@ -129,10 +212,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             Confirm Logout
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Are you sure you want to logout? You will be redirected to the login page.
+            Are you sure you want to logout?
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-3">
           <Button
             variant="outline"
             onClick={() => setShowLogoutModal(false)}

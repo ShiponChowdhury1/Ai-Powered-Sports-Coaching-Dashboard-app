@@ -1,17 +1,4 @@
 // Auth API Request Types
-export interface SignupStep1Request {
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  password: string;
-}
-
-export interface SignupStep2Request {
-  email: string;
-  otp: string;
-}
-
 export interface LoginRequest {
   email: string;
   password: string;
@@ -62,23 +49,16 @@ export interface ResetPasswordResponse {
   message: string;
 }
 
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
 // Auth API Response Types  
-export interface SignupStep1Response {
-  message: string;
-  errors?: {
-    email?: string[];
-    phone?: string[];
-    password?: string[];
-    name?: string[];
-  };
-}
-
-export interface SignupStep2Response {
-  message: string;
-  access_token: string;
-  refresh_token: string;
-}
-
 export interface LoginResponse {
   message: string;
   access_token: string;

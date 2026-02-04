@@ -17,7 +17,7 @@ import type { ApiError } from "@/types/auth.types";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/features/auth/authSlice";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -77,12 +77,15 @@ export default function LoginPage() {
         const errors = apiError.data.errors;
         if (errors.email) {
           setError("email", { message: errors.email[0] });
+          toast.error(errors.email[0]);
         }
         if (errors.password) {
           setError("password", { message: errors.password[0] });
+          toast.error(errors.password[0]);
         }
       } else {
-        toast.error(apiError.data?.message || "Invalid email or password.");
+        const errorMessage = apiError.data?.message || "Invalid email or password. Please check your credentials and try again.";
+        toast.error(errorMessage);
       }
     }
   };
@@ -226,19 +229,6 @@ export default function LoginPage() {
         >
           {isLoading ? "Logging in..." : "Login"}
         </Button>
-
-        {/* Sign Up Link */}
-        <div className="text-center pt-2">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/auth/signup"
-              className="text-[#0F744F] font-medium hover:underline"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
 
         {/* Divider */}
         <div className="relative flex items-center py-2">
