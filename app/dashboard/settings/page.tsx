@@ -8,20 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useGetProfileQuery, useUpdateProfileMutation } from "@/store/api/profileApi";
 import { useChangePasswordMutation } from "@/store/api/authApi";
+import { useGetPrivacyPolicyQuery, useGetTermsConditionsQuery } from "@/store/api/privacyPolicyApi";
 import { toast } from "sonner";
 import { 
   Camera, 
   Bell, 
-  Bold, 
-  Italic, 
-  Strikethrough, 
-  Link, 
-  Quote, 
-  Code, 
-  Image, 
-  List, 
-  ListOrdered,
-  AlignLeft,
   Eye,
   EyeOff
 } from "lucide-react";
@@ -31,6 +22,8 @@ type SettingsTab = "admin-info" | "change-password" | "notification" | "privacy-
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("admin-info");
   const { data: profile, isLoading, error } = useGetProfileQuery();
+  const { data: privacyPolicy, isLoading: isLoadingPrivacyPolicy } = useGetPrivacyPolicyQuery();
+  const { data: termsConditions, isLoading: isLoadingTermsConditions } = useGetTermsConditionsQuery();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -459,186 +452,127 @@ export default function SettingsPage() {
 
         {activeTab === "privacy-policy" && (
           <div className="space-y-6">
-            {/* Header with Edit Button */}
+            {/* Header */}
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Privacy Policy</h1>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6">
-                Edit
-              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {privacyPolicy?.title || "Privacy Policy"}
+                </h1>
+                {privacyPolicy?.meta_description && (
+                  <p className="text-sm text-gray-600 mt-1">{privacyPolicy.meta_description}</p>
+                )}
+              </div>
             </div>
 
-            {/* Editor Toolbar */}
-            <div className="bg-gray-100 rounded-lg p-2 flex items-center gap-1">
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">H</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">B</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Italic className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Strikethrough className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Link className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Quote className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Code className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Image className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-xs font-medium">NFT</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><List className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><ListOrdered className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><AlignLeft className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-sm">1</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-sm">?</button>
-            </div>
+            {/* Loading State */}
+            {isLoadingPrivacyPolicy && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading privacy policy...</p>
+                </div>
+              </div>
+            )}
 
             {/* Privacy Policy Content */}
-            <div className="space-y-6 text-gray-700">
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">1. Introduction</h2>
-                <p className="text-sm leading-relaxed">
-                  Form-Cert SRL ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our platform and use our services.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-3">2. Information We Collect</h2>
+            {!isLoadingPrivacyPolicy && privacyPolicy && (
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div 
+                  className="prose prose-sm max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: privacyPolicy.content }}
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: '1.75',
+                  }}
+                />
                 
-                <h3 className="font-bold text-gray-900 mb-2">Personal Data</h3>
-                <p className="text-sm mb-2">We may collect personally identifiable information, such as:</p>
-                <ul className="text-sm space-y-1 ml-0">
-                  <li>Name and contact information (email address, phone number)</li>
-                  <li>Professional information (job title, company, industry)</li>
-                  <li>Account credentials (username, password)</li>
-                  <li>Payment information (processed securely through third-party payment processors)</li>
-                  <li>Course enrollment and progress data</li>
-                </ul>
-              </section>
+                {/* Metadata */}
+                <div className="mt-8 pt-6 border-t border-gray-200 text-xs text-gray-500 space-y-1">
+                  <p>Last updated: {new Date(privacyPolicy.updated_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</p>
+                  {privacyPolicy.published_at && (
+                    <p>Published: {new Date(privacyPolicy.published_at).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-              <section>
-                <h3 className="font-bold text-gray-900 mb-2">Usage Data</h3>
-                <p className="text-sm leading-relaxed">
-                  We automatically collect information about your device and how you interact with our platform, including IP address, browser type, pages visited, time spent on pages, and other diagnostic data.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">6. Data Security</h2>
-                <p className="text-sm leading-relaxed">
-                  We implement appropriate technical and organizational security measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">7. Data Retention</h2>
-                <p className="text-sm leading-relaxed">
-                  We retain your personal data only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required by law.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">8. Your Rights and Choices</h2>
-                <p className="text-sm leading-relaxed">
-                  You can update your account information, unsubscribe from marketing communications, or request deletion of your data by contacting us at privacy@form-cert.eu.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">10. Changes to This Policy</h2>
-                <p className="text-sm leading-relaxed">
-                  We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">11. Contact Us</h2>
-                <p className="text-sm mb-1">If you have questions about this Privacy Policy, please contact us:</p>
-                <p className="text-sm text-emerald-600">Email: privacy@form-cert.eu</p>
-                <p className="text-sm text-emerald-600">Address: Via Roma 123, 20121 Milano, Italy</p>
-              </section>
-            </div>
+            {/* Error State */}
+            {!isLoadingPrivacyPolicy && !privacyPolicy && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <p className="text-red-600">Failed to load privacy policy. Please try again later.</p>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === "terms" && (
           <div className="space-y-6">
-            {/* Header with Edit Button */}
+            {/* Header */}
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Terms & Conditions</h1>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6">
-                Edit
-              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {termsConditions?.title || "Terms & Conditions"}
+                </h1>
+                {termsConditions?.meta_description && (
+                  <p className="text-sm text-gray-600 mt-1">{termsConditions.meta_description}</p>
+                )}
+              </div>
             </div>
 
-            {/* Editor Toolbar */}
-            <div className="bg-gray-100 rounded-lg p-2 flex flex-wrap items-center gap-1">
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">H</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 font-bold text-sm">B</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Italic className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Strikethrough className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Link className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Quote className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Code className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><Image className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-xs font-medium">NFT</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><List className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><ListOrdered className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600"><AlignLeft className="h-4 w-4" /></button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-sm">1</button>
-              <button className="p-2 hover:bg-gray-200 rounded text-gray-600 text-sm">?</button>
-            </div>
+            {/* Loading State */}
+            {isLoadingTermsConditions && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading terms & conditions...</p>
+                </div>
+              </div>
+            )}
 
             {/* Terms & Conditions Content */}
-            <div className="space-y-6 text-gray-700">
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">1. Introduction</h2>
-                <p className="text-sm leading-relaxed">
-                  Form-Cert SRL ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our platform and use our services.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-3">2. Information We Collect</h2>
+            {!isLoadingTermsConditions && termsConditions && (
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div 
+                  className="prose prose-sm max-w-none text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: termsConditions.content }}
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: '1.75',
+                  }}
+                />
                 
-                <h3 className="font-bold text-gray-900 mb-2">Personal Data</h3>
-                <p className="text-sm mb-2">We may collect personally identifiable information, such as:</p>
-                <ul className="text-sm space-y-1 ml-0">
-                  <li>Name and contact information (email address, phone number)</li>
-                  <li>Professional information (job title, company, industry)</li>
-                  <li>Account credentials (username, password)</li>
-                  <li>Payment information (processed securely through third-party payment processors)</li>
-                  <li>Course enrollment and progress data</li>
-                </ul>
-              </section>
+                {/* Metadata */}
+                <div className="mt-8 pt-6 border-t border-gray-200 text-xs text-gray-500 space-y-1">
+                  <p>Last updated: {new Date(termsConditions.updated_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</p>
+                  {termsConditions.published_at && (
+                    <p>Published: {new Date(termsConditions.published_at).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">3.Usage Data</h2>
-                <p className="text-sm leading-relaxed">
-                  We automatically collect information about your device and how you interact with our platform, including IP address, browser type, pages visited, time spent on pages, and other diagnostic data.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">4. Data Security</h2>
-                <p className="text-sm leading-relaxed">
-                  We implement appropriate technical and organizational security measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">5. Data Retention</h2>
-                <p className="text-sm leading-relaxed">
-                  We retain your personal data only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required by law.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">6. Your Rights and Choices</h2>
-                <p className="text-sm leading-relaxed">
-                  You can update your account information, unsubscribe from marketing communications, or request deletion of your data by contacting us at privacy@form-cert.eu.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">7. Changes to This Policy</h2>
-                <p className="text-sm leading-relaxed">
-                  We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
-                </p>
-              </section>
-            </div>
+            {/* Error State */}
+            {!isLoadingTermsConditions && !termsConditions && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <p className="text-red-600">Failed to load terms & conditions. Please try again later.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
