@@ -6,6 +6,7 @@ import supportReducer from "@/features/support/supportSlice";
 import settingsReducer from "@/features/settings/settingsSlice";
 import dashboardReducer from "@/features/dashboard/dashboardSlice";
 import authReducer from "@/features/auth/authSlice";
+import subscribersReducer from "@/features/subscribers/subscribersSlice";
 import { baseApi } from "./api/baseApi";
 
 export const rootReducer = combineReducers({
@@ -16,5 +17,6 @@ export const rootReducer = combineReducers({
   settings: settingsReducer,
   dashboard: dashboardReducer,
   auth: authReducer,
+  subscribers: subscribersReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 });

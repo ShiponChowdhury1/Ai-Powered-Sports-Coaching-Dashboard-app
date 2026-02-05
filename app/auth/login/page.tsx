@@ -18,6 +18,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/features/auth/authSlice";
 import { toast } from "sonner";
+import { baseApi } from "@/store/api/baseApi";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -52,10 +53,13 @@ export default function LoginPage() {
       }).unwrap();
       
       // Check if user is admin
-      if (result.user && result.user.role !== "ADMIN") {
+      if (result.user && result.user.role !== "Admin") {
         toast.error("Only admin users can access the dashboard.");
         return;
       }
+      
+      // Clear API cache before setting new credentials to ensure fresh data
+      dispatch(baseApi.util.resetApiState());
       
       // Store tokens and user in Redux and localStorage
       dispatch(setCredentials({
@@ -64,7 +68,7 @@ export default function LoginPage() {
         user: result.user || {
           email: data.email,
           name: "Admin",
-          role: "ADMIN",
+          role: "Admin",
         },
       }));
       
@@ -98,10 +102,13 @@ export default function LoginPage() {
         }).unwrap();
         
         // Check if user is admin
-        if (result.user && result.user.role !== "ADMIN") {
+        if (result.user && result.user.role !== "Admin") {
           toast.error("Only admin users can access the dashboard.");
           return;
         }
+        
+        // Clear API cache before setting new credentials to ensure fresh data
+        dispatch(baseApi.util.resetApiState());
         
         // Store tokens and user in Redux and localStorage
         dispatch(setCredentials({
@@ -110,7 +117,7 @@ export default function LoginPage() {
           user: result.user || {
             email: "",
             name: "Admin",
-            role: "ADMIN",
+            role: "Admin",
           },
         }));
         

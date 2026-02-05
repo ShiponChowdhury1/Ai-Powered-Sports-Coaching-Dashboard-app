@@ -31,6 +31,7 @@ import {
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/features/auth/authSlice";
 import { toast } from "react-toastify";
+import { baseApi } from "@/store/api/baseApi";
 
 const sidebarItems = [
   {
@@ -41,6 +42,11 @@ const sidebarItems = [
   {
     title: "Users",
     href: "/dashboard/users",
+    icon: Users,
+  },
+  {
+    title: "Subscribers",
+    href: "/dashboard/subscribers",
     icon: Users,
   },
   {
@@ -78,6 +84,8 @@ export function Sidebar({ onClose }: SidebarProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
+    // Clear API cache before logging out
+    dispatch(baseApi.util.resetApiState());
     dispatch(logout());
     toast.success("Logged out successfully!");
     router.push("/auth/login");

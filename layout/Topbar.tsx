@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Search, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ import { useGetProfileQuery } from "@/store/api/profileApi";
 import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/store/api/notificationsApi";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { baseApi } from "@/store/api/baseApi";
 
 interface TopbarProps {
   onMenuClick?: () => void;
@@ -48,22 +49,56 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const [markAsRead] = useMarkAsReadMutation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
+
+  // Fix hydration mismatch by only rendering dropdown after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Reset showAll when closing notifications panel
+  // Mark all notifications as read when opening the panel (Facebook-style)
+  useEffect(() => {
+    if (showNotifications && notifications.length > 0) {
+      // Mark all notifications as read when user opens the panel
+      notifications.forEach(async (notification) => {
+        try {
+          await markAsRead(notification.id).unwrap();
+        } catch (error) {
+          console.warn("Could not mark notification as read:", error);
+        }
+      });
+      // Refetch to update the count
+      setTimeout(() => refetchNotifications(), 500);
+    }
+    
+    if (!showNotifications) {
+      setShowAllNotifications(false);
+    }
+  }, [showNotifications, notifications, markAsRead, refetchNotifications]);
 
   const handleLogout = () => {
+    // Clear API cache before logging out
+    dispatch(baseApi.util.resetApiState());
     dispatch(logout());
     toast.success("Logged out successfully!");
     router.push("/auth/login");
   };
 
   const handleNotificationClick = async (notificationId: number, link: string | null) => {
+    // Open link first (if exists)
+    if (link) {
+      window.open(link, "_blank");
+    }
+    
+    // Try to mark as read, but don't block if it fails
     try {
       await markAsRead(notificationId).unwrap();
-      if (link) {
-        window.open(link, "_blank");
-      }
       refetchNotifications();
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      // Silently fail - the backend might not have this endpoint yet
+      console.warn("Could not mark notification as read:", error);
     }
   };
 
@@ -120,36 +155,50 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </Button>
 
         {/* User Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
-              <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                <AvatarImage src={profile?.image} alt={profile?.name || user?.name || "Admin"} />
-                <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                  {profile?.name ? getInitials(profile.name) : user?.name ? getInitials(user.name) : "AD"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden sm:flex flex-col items-start text-sm">
-                <span className="font-medium text-gray-900">{profile?.name || user?.name || "Admin"}</span>
-                <span className="text-xs text-gray-500">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
-              </div>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[222px] bg-[#FFFFFF] border-[#E5E7EB]">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-red-600 cursor-pointer"
-              onClick={() => setShowLogoutModal(true)}
-            >
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {mounted ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+                  <AvatarImage src={profile?.image} alt={profile?.name || user?.name || "Admin"} />
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                    {profile?.name ? getInitials(profile.name) : user?.name ? getInitials(user.name) : "AD"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:flex flex-col items-start text-sm">
+                  <span className="font-medium text-gray-900">{profile?.name || user?.name || "Admin"}</span>
+                  <span className="text-xs text-gray-500">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[222px] bg-[#FFFFFF] border-[#E5E7EB]">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-red-600 cursor-pointer"
+                onClick={() => setShowLogoutModal(true)}
+              >
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
+            <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+              <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                AD
+              </AvatarFallback>
+            </Avatar>
+            <div className="hidden sm:flex flex-col items-start text-sm">
+              <span className="font-medium text-gray-900">Admin</span>
+              <span className="text-xs text-gray-500">admin@sportcoach.ai</span>
+            </div>
+          </Button>
+        )}
       </div>
     </header>
 
@@ -166,7 +215,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             </div>
           ) : (
             <>
-              {notifications.map((notification) => (
+              {/* Show only 3 notifications initially, or all if showAllNotifications is true */}
+              {(showAllNotifications ? notifications : notifications.slice(0, 3)).map((notification) => (
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification.id, notification.link)}
@@ -187,17 +237,30 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   </p>
                 </div>
               ))}
-              <div className="pt-4 text-center">
-                <button
-                  onClick={() => {
-                    router.push("/dashboard/notifications");
-                    setShowNotifications(false);
-                  }}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  View all notifications
-                </button>
-              </div>
+              
+              {/* Show "View all" button only if there are more than 3 notifications and not showing all */}
+              {notifications.length > 3 && !showAllNotifications && (
+                <div className="pt-4 text-center">
+                  <button
+                    onClick={() => setShowAllNotifications(true)}
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    View all {notifications.length} notifications
+                  </button>
+                </div>
+              )}
+              
+              {/* Show "Show less" button when viewing all */}
+              {showAllNotifications && notifications.length > 3 && (
+                <div className="pt-4 text-center">
+                  <button
+                    onClick={() => setShowAllNotifications(false)}
+                    className="text-sm text-gray-600 hover:text-gray-700 font-medium"
+                  >
+                    Show less
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
