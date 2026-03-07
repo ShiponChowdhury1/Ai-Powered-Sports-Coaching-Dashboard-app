@@ -4,11 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useGetProfileQuery, useUpdateProfileMutation } from "@/store/api/profileApi";
 import { useChangePasswordMutation } from "@/store/api/authApi";
-import { useGetPrivacyPolicyQuery, useGetTermsConditionsQuery } from "@/store/api/privacyPolicyApi";
+import { 
+  useGetPrivacyPolicyQuery, 
+  useGetTermsConditionsQuery,
+  useUpdatePrivacyPolicyMutation,
+  useUpdateTermsConditionsMutation
+} from "@/store/api/privacyPolicyApi";
 import { toast } from "sonner";
 import { 
   Camera, 
@@ -26,7 +32,26 @@ export default function SettingsPage() {
   const { data: termsConditions, isLoading: isLoadingTermsConditions } = useGetTermsConditionsQuery();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [updatePrivacyPolicy, { isLoading: isUpdatingPrivacyPolicy }] = useUpdatePrivacyPolicyMutation();
+  const [updateTermsConditions, { isLoading: isUpdatingTermsConditions }] = useUpdateTermsConditionsMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Edit mode states
+  const [isEditingPrivacyPolicy, setIsEditingPrivacyPolicy] = useState(false);
+  const [isEditingTermsConditions, setIsEditingTermsConditions] = useState(false);
+  
+  // Edit form data
+  const [privacyPolicyEditData, setPrivacyPolicyEditData] = useState({
+    title: "",
+    content: "",
+    meta_description: "",
+  });
+  
+  const [termsConditionsEditData, setTermsConditionsEditData] = useState({
+    title: "",
+    content: "",
+    meta_description: "",
+  });
   
   const [profileData, setProfileData] = useState({
     name: "",
@@ -46,6 +71,28 @@ export default function SettingsPage() {
       setPreviewImage(profile.image);
     }
   }, [profile]);
+
+  // Update privacy policy edit data when loaded
+  useEffect(() => {
+    if (privacyPolicy) {
+      setPrivacyPolicyEditData({
+        title: privacyPolicy.title,
+        content: privacyPolicy.content,
+        meta_description: privacyPolicy.meta_description,
+      });
+    }
+  }, [privacyPolicy]);
+
+  // Update terms conditions edit data when loaded
+  useEffect(() => {
+    if (termsConditions) {
+      setTermsConditionsEditData({
+        title: termsConditions.title,
+        content: termsConditions.content,
+        meta_description: termsConditions.meta_description,
+      });
+    }
+  }, [termsConditions]);
 
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -133,6 +180,44 @@ export default function SettingsPage() {
       });
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to change password");
+    }
+  };
+
+  const handlePrivacyPolicyUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const result = await updatePrivacyPolicy({
+        title: privacyPolicyEditData.title,
+        content: privacyPolicyEditData.content,
+        meta_description: privacyPolicyEditData.meta_description,
+        is_published: true,
+        published_at: new Date().toISOString(),
+      }).unwrap();
+      
+      toast.success(result.message || "Privacy policy updated successfully");
+      setIsEditingPrivacyPolicy(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update privacy policy");
+    }
+  };
+
+  const handleTermsConditionsUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const result = await updateTermsConditions({
+        title: termsConditionsEditData.title,
+        content: termsConditionsEditData.content,
+        meta_description: termsConditionsEditData.meta_description,
+        is_published: true,
+        published_at: new Date().toISOString(),
+      }).unwrap();
+      
+      toast.success(result.message || "Terms & Conditions updated successfully");
+      setIsEditingTermsConditions(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update terms & conditions");
     }
   };
 
@@ -458,10 +543,18 @@ export default function SettingsPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {privacyPolicy?.title || "Privacy Policy"}
                 </h1>
-                {privacyPolicy?.meta_description && (
+                {!isEditingPrivacyPolicy && privacyPolicy?.meta_description && (
                   <p className="text-sm text-gray-600 mt-1">{privacyPolicy.meta_description}</p>
                 )}
               </div>
+              {!isEditingPrivacyPolicy && privacyPolicy && (
+                <Button 
+                  onClick={() => setIsEditingPrivacyPolicy(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6"
+                >
+                  Edit
+                </Button>
+              )}
             </div>
 
             {/* Loading State */}
@@ -474,8 +567,72 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Privacy Policy Content */}
-            {!isLoadingPrivacyPolicy && privacyPolicy && (
+            {/* Edit Mode */}
+            {isEditingPrivacyPolicy && privacyPolicy && (
+              <form onSubmit={handlePrivacyPolicyUpdate} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="pp-title" className="text-gray-900 font-medium">
+                    Title
+                  </Label>
+                  <Input
+                    id="pp-title"
+                    value={privacyPolicyEditData.title}
+                    onChange={(e) => setPrivacyPolicyEditData({ ...privacyPolicyEditData, title: e.target.value })}
+                    required
+                    className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="pp-meta" className="text-gray-900 font-medium">
+                    Meta Description
+                  </Label>
+                  <Input
+                    id="pp-meta"
+                    value={privacyPolicyEditData.meta_description}
+                    onChange={(e) => setPrivacyPolicyEditData({ ...privacyPolicyEditData, meta_description: e.target.value })}
+                    className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="pp-content" className="text-gray-900 font-medium">
+                    Content
+                  </Label>
+                  <Textarea
+                    id="pp-content"
+                    value={privacyPolicyEditData.content}
+                    onChange={(e) => setPrivacyPolicyEditData({ ...privacyPolicyEditData, content: e.target.value })}
+                    required
+                    rows={15}
+                    className="w-full bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 font-mono text-sm"
+                    placeholder="Enter HTML content..."
+                  />
+                  <p className="text-xs text-gray-500">You can use HTML tags for formatting</p>
+                </div>
+
+                <div className="flex justify-center gap-3 pt-4">
+                  <Button 
+                    type="button"
+                    onClick={() => setIsEditingPrivacyPolicy(false)}
+                    variant="outline"
+                    className="w-[150px] h-[52px] border-[#E5E7EB]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={isUpdatingPrivacyPolicy}
+                    className="w-[150px] h-[52px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl disabled:opacity-50"
+                  >
+                    {isUpdatingPrivacyPolicy ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* View Mode - Privacy Policy Content */}
+            {!isEditingPrivacyPolicy && !isLoadingPrivacyPolicy && privacyPolicy && (
               <div className="bg-gray-50 rounded-lg p-6">
                 <div 
                   className="prose prose-sm max-w-none text-gray-700"
@@ -521,10 +678,18 @@ export default function SettingsPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {termsConditions?.title || "Terms & Conditions"}
                 </h1>
-                {termsConditions?.meta_description && (
+                {!isEditingTermsConditions && termsConditions?.meta_description && (
                   <p className="text-sm text-gray-600 mt-1">{termsConditions.meta_description}</p>
                 )}
               </div>
+              {!isEditingTermsConditions && termsConditions && (
+                <Button 
+                  onClick={() => setIsEditingTermsConditions(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6"
+                >
+                  Edit
+                </Button>
+              )}
             </div>
 
             {/* Loading State */}
@@ -537,8 +702,72 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Terms & Conditions Content */}
-            {!isLoadingTermsConditions && termsConditions && (
+            {/* Edit Mode */}
+            {isEditingTermsConditions && termsConditions && (
+              <form onSubmit={handleTermsConditionsUpdate} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="tc-title" className="text-gray-900 font-medium">
+                    Title
+                  </Label>
+                  <Input
+                    id="tc-title"
+                    value={termsConditionsEditData.title}
+                    onChange={(e) => setTermsConditionsEditData({ ...termsConditionsEditData, title: e.target.value })}
+                    required
+                    className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tc-meta" className="text-gray-900 font-medium">
+                    Meta Description
+                  </Label>
+                  <Input
+                    id="tc-meta"
+                    value={termsConditionsEditData.meta_description}
+                    onChange={(e) => setTermsConditionsEditData({ ...termsConditionsEditData, meta_description: e.target.value })}
+                    className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tc-content" className="text-gray-900 font-medium">
+                    Content
+                  </Label>
+                  <Textarea
+                    id="tc-content"
+                    value={termsConditionsEditData.content}
+                    onChange={(e) => setTermsConditionsEditData({ ...termsConditionsEditData, content: e.target.value })}
+                    required
+                    rows={15}
+                    className="w-full bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 font-mono text-sm"
+                    placeholder="Enter HTML content..."
+                  />
+                  <p className="text-xs text-gray-500">You can use HTML tags for formatting</p>
+                </div>
+
+                <div className="flex justify-center gap-3 pt-4">
+                  <Button 
+                    type="button"
+                    onClick={() => setIsEditingTermsConditions(false)}
+                    variant="outline"
+                    className="w-[150px] h-[52px] border-[#E5E7EB]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={isUpdatingTermsConditions}
+                    className="w-[150px] h-[52px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl disabled:opacity-50"
+                  >
+                    {isUpdatingTermsConditions ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* View Mode - Terms & Conditions Content */}
+            {!isEditingTermsConditions && !isLoadingTermsConditions && termsConditions && (
               <div className="bg-gray-50 rounded-lg p-6">
                 <div 
                   className="prose prose-sm max-w-none text-gray-700"

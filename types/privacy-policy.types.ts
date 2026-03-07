@@ -19,6 +19,24 @@ export interface ContentPageResponse {
   message?: string;
 }
 
+// Update request type
+export interface UpdateContentPageRequest {
+  page_type?: string;
+  title?: string;
+  slug?: string;
+  content?: string;
+  meta_description?: string;
+  meta_keywords?: string;
+  is_published?: boolean;
+  published_at?: string;
+  order?: number;
+}
+
+export interface UpdateContentPageResponse {
+  message: string;
+  data: ContentPage;
+}
+
 // Type aliases for specific content types
 export type PrivacyPolicy = ContentPage;
 export type TermsConditions = ContentPage;

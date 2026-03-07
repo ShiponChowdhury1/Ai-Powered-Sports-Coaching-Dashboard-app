@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Search, Menu, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -125,20 +124,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <Menu className="h-5 w-5" />
       </Button>
 
-      {/* Search */}
-      <div className="flex items-center flex-1 max-w-[672px]">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Search users, videos, emails..."
-            className="w-full h-[42px] pl-10 pr-4 py-2 bg-gray-50 border-[1.11px] border-[#D1D5DC] rounded-[10px]"
-          />
-        </div>
-      </div>
-
       {/* Right side */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 ml-auto">
         {/* Notifications */}
         <Button 
           variant="ghost" 
