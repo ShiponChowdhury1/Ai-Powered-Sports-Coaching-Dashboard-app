@@ -236,6 +236,7 @@ export default function SubscribersPage() {
         onConfirm={handleDeleteConfirm}
         confirmText="Delete"
         cancelText="Cancel"
+        variant="destructive"
       />
     </div>
   );

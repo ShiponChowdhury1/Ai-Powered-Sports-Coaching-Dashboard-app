@@ -5,16 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLoginMutation, useGoogleLoginMutation } from "@/store/api/authApi";
+import { useLoginMutation } from "@/store/api/authApi";
 import type { ApiError } from "@/types/auth.types";
-import { useGoogleLogin } from "@react-oauth/google";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/features/auth/authSlice";
 import { toast } from "sonner";
@@ -22,7 +20,7 @@ import { baseApi } from "@/store/api/baseApi";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -34,7 +32,6 @@ export default function LoginPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [login, { isLoading }] = useLoginMutation();
-  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
 
   const {
     register,
@@ -74,64 +71,21 @@ export default function LoginPage() {
       
       toast.success(result.message || "Logged in successfully!");
       router.push("/dashboard");
-    } catch (error) {
-      const apiError = error as ApiError;
-      
-      if (apiError.data?.errors) {
-        const errors = apiError.data.errors;
-        if (errors.email) {
-          setError("email", { message: errors.email[0] });
-          toast.error(errors.email[0]);
-        }
-        if (errors.password) {
-          setError("password", { message: errors.password[0] });
-          toast.error(errors.password[0]);
-        }
-      } else {
-        const errorMessage = apiError.data?.message || "Invalid email or password. Please check your credentials and try again.";
-        toast.error(errorMessage);
-      }
+    } catch (error: unknown) {
+      const apiError = error as { data?: Record<string, unknown>; status?: number };
+      const data = apiError?.data;
+
+      // Backend returns errors in different formats: { detail: ... }, { error: ... }, { non_field_errors: [...] }
+      const errorMessage =
+        (data?.detail as string) ||
+        (data?.error as string) ||
+        (Array.isArray(data?.non_field_errors) ? (data.non_field_errors as string[])[0] : null) ||
+        (data?.message as string) ||
+        "Invalid email or password. Please check your credentials and try again.";
+
+      toast.error(errorMessage);
     }
   };
-
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const result = await googleLogin({
-          access_token: tokenResponse.access_token,
-        }).unwrap();
-        
-        // Check if user is admin
-        if (result.user && result.user.role !== "Admin") {
-          toast.error("Only admin users can access the dashboard.");
-          return;
-        }
-        
-        // Clear API cache before setting new credentials to ensure fresh data
-        dispatch(baseApi.util.resetApiState());
-        
-        // Store tokens and user in Redux and localStorage
-        dispatch(setCredentials({
-          accessToken: result.access_token,
-          refreshToken: result.refresh_token,
-          user: result.user || {
-            email: "",
-            name: "Admin",
-            role: "Admin",
-          },
-        }));
-        
-        toast.success(result.message || "Logged in successfully with Google!");
-        router.push("/dashboard");
-      } catch (error) {
-        const apiError = error as ApiError;
-        toast.error(apiError.data?.message || "Google login failed. Please try again.");
-      }
-    },
-    onError: () => {
-      toast.error("Google login failed. Please try again.");
-    },
-  });
 
   return (
     <div
@@ -237,42 +191,6 @@ export default function LoginPage() {
           {isLoading ? "Logging in..." : "Login"}
         </Button>
 
-        {/* Divider */}
-        <div className="relative flex items-center py-2">
-          <div className="flex-grow border-t border-[#E5E7EB]"></div>
-          <span className="flex-shrink mx-4 text-sm text-gray-500">Or continue with</span>
-          <div className="flex-grow border-t border-[#E5E7EB]"></div>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="flex gap-4">
-          <button
-            type="button"
-            className="flex-1 h-[48px] flex items-center justify-center gap-3 bg-white border border-[#E5E7EB] rounded-xl hover:bg-gray-50 transition-colors"
-            onClick={() => handleGoogleLogin()}
-          >
-            <Image
-              src="/auth/search.png"
-              alt="Google"
-              width={24}
-              height={24}
-            />
-            <span className="font-medium text-gray-700">Google</span>
-          </button>
-          <button
-            type="button"
-            className="flex-1 h-[48px] flex items-center justify-center gap-3 bg-white border border-[#E5E7EB] rounded-xl hover:bg-gray-50 transition-colors"
-            onClick={() => console.log("Facebook login")}
-          >
-            <Image
-              src="/auth/facebook.png"
-              alt="Facebook"
-              width={24}
-              height={24}
-            />
-            <span className="font-medium text-gray-700">Facebook</span>
-          </button>
-        </div>
       </form>
     </div>
   );

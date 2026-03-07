@@ -40,20 +40,21 @@ export function ConfirmModal({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex flex-row gap-2 sm:justify-end">
+          <Button
+            onClick={onConfirm}
+            disabled={loading}
+            style={variant === "destructive" ? { backgroundColor: "#dc2626", color: "#fff" } : undefined}
+            className={variant === "destructive" ? "hover:opacity-90" : ""}
+          >
+            {loading ? "Processing..." : confirmText}
+          </Button>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
             {cancelText}
-          </Button>
-          <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? "Processing..." : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

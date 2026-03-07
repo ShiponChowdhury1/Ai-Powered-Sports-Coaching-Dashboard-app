@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
-import { Users, Video, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, UserCheck, UserPlus, Activity, AlertCircle } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchDashboardStats,
+  fetchUserRegistrationChart,
+} from "@/features/dashboard/dashboardSlice";
 import {
   LineChart,
   Line,
@@ -18,79 +23,24 @@ import {
   Bar,
 } from "recharts";
 
-// Mock data for demonstration
-const userGrowthData = [
-  { month: "Jan", users: 7200 },
-  { month: "Feb", users: 8400 },
-  { month: "Mar", users: 9100 },
-  { month: "Apr", users: 10200 },
-  { month: "May", users: 10800 },
-  { month: "Jun", users: 11200 },
-  { month: "Jul", users: 11500 },
-  { month: "Aug", users: 11800 },
-  { month: "Sep", users: 12000 },
-  { month: "Oct", users: 12100 },
-  { month: "Nov", users: 12300 },
-  { month: "Dec", users: 12458 },
-];
-
-const videoUploadsData = [
-  { month: "Aug", uploads: 4200 },
-  { month: "Aug", uploads: 5100 },
-  { month: "Aug", uploads: 4800 },
-  { month: "Aug", uploads: 6200 },
-  { month: "Aug", uploads: 5500 },
-  { month: "Aug", uploads: 7200 },
-  { month: "Aug", uploads: 6800 },
-  { month: "Aug", uploads: 5900 },
-  { month: "Aug", uploads: 4500 },
-  { month: "Aug", uploads: 6100 },
-  { month: "Aug", uploads: 5800 },
-  { month: "Aug", uploads: 7500 },
-];
-
-const subscriptionData = [
-  { plan: "Free", count: 8500 },
-  { plan: "Monthly", count: 2100 },
-  { plan: "3-Month", count: 980 },
-  { plan: "Yearly", count: 450 },
-];
-
-const quickActions = [
-  {
-    id: "1",
-    title: "Flagged Videos",
-    count: 8,
-    action: "Review Now",
-    actionColor: "text-red-600",
-  },
-  {
-    id: "2",
-    title: "AI Failures",
-    count: 12,
-    action: "View Details",
-    actionColor: "text-gray-600",
-  },
-  {
-    id: "3",
-    title: "Support Tickets",
-    count: 23,
-    action: "Respond",
-    actionColor: "text-gray-900",
-  },
-  {
-    id: "4",
-    title: "Failed Payments",
-    count: 5,
-    action: "Investigate",
-    actionColor: "text-red-600",
-  },
-];
-
 export default function DashboardPage() {
+  const dispatch = useAppDispatch();
+  const { stats, userRegistrationChart, loading } = useAppSelector(
+    (state) => state.dashboard
+  );
+
   useEffect(() => {
-    // In production, dispatch fetchDashboardStats() here
-  }, []);
+    dispatch(fetchDashboardStats());
+    dispatch(fetchUserRegistrationChart(30));
+  }, [dispatch]);
+
+  const chartData = useMemo(() => {
+    if (!userRegistrationChart) return [];
+    return userRegistrationChart.labels.map((label, index) => ({
+      date: label,
+      users: userRegistrationChart.datasets[0]?.data[index] || 0,
+    }));
+  }, [userRegistrationChart]);
 
   return (
     <div className="space-y-6">
@@ -102,34 +52,30 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Total Registered Users"
-          value="12,458"
-          change={12.5}
+          title="Total Users"
+          value={loading ? "..." : (stats?.total_users?.toLocaleString() ?? "0")}
           icon={Users}
           iconColor="text-emerald-600"
           iconBgColor="bg-emerald-50"
         />
         <StatsCard
-          title="Active Subscribers"
-          value="3,247"
-          change={8.2}
-          icon={TrendingUp}
-          iconColor="text-emerald-600"
-          iconBgColor="bg-emerald-50"
+          title="Active Users"
+          value={loading ? "..." : (stats?.active_users?.toLocaleString() ?? "0")}
+          icon={UserCheck}
+          iconColor="text-blue-600"
+          iconBgColor="bg-blue-50"
         />
         <StatsCard
-          title="Total Videos Uploaded"
-          value="48,392"
-          change={15.3}
-          icon={Video}
+          title="Total Subscribers"
+          value={loading ? "..." : (stats?.total_subscribers?.toLocaleString() ?? "0")}
+          icon={UserPlus}
           iconColor="text-purple-600"
           iconBgColor="bg-purple-50"
         />
         <StatsCard
-          title="Monthly Revenue"
-          value="$84,250"
-          change={18.7}
-          icon={DollarSign}
+          title="Active Subscribers"
+          value={loading ? "..." : (stats?.active_subscribers?.toLocaleString() ?? "0")}
+          icon={Activity}
           iconColor="text-emerald-600"
           iconBgColor="bg-emerald-50"
         />
@@ -137,22 +83,23 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* User Growth Chart */}
+        {/* User Registration Chart */}
         <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
-              User Growth (1 Years)
+              User Registrations (Last 30 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={userGrowthData}>
+                <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis
-                    dataKey="month"
+                    dataKey="date"
                     tick={{ fontSize: 12 }}
                     stroke="#9ca3af"
+                    interval="preserveStartEnd"
                   />
                   <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" />
                   <Tooltip />
@@ -169,96 +116,69 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Video Uploads Chart */}
+        {/* New Users Summary */}
         <Card className="border-[#E5E7EB]">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
-              Video Upload (1 Years)
+              New Users Summary
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[250px] sm:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={videoUploadsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 12 }}
-                    stroke="#9ca3af"
-                  />
-                  <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" />
-                  <Tooltip />
-                  <Bar dataKey="uploads" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-4">
+                <span className="text-sm font-medium text-gray-500">New Today</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {loading ? "..." : (stats?.new_users_today ?? 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-4">
+                <span className="text-sm font-medium text-gray-500">New This Week</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {loading ? "..." : (stats?.new_users_this_week ?? 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-4">
+                <span className="text-sm font-medium text-gray-500">New This Month</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {loading ? "..." : (stats?.new_users_this_month ?? 0)}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Bottom Row */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Subscription Distribution */}
+      {/* Recent Activities */}
+      {stats?.recent_activities && stats.recent_activities.length > 0 && (
         <Card className="border-[#E5E7EB]">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">
-              Subscription Distribution
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold">Recent Activities</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={subscriptionData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-                  <YAxis
-                    type="category"
-                    dataKey="plan"
-                    tick={{ fontSize: 12 }}
-                    stroke="#9ca3af"
-                    width={80}
-                  />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card className="border-[#E5E7EB]">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {quickActions.map((action) => (
+          <CardContent className="space-y-3">
+            {stats.recent_activities.map((activity) => (
               <div
-                key={action.id}
+                key={activity.id}
                 className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+                    <Activity className="h-5 w-5 text-blue-500" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{action.title}</p>
+                    <p className="font-medium text-gray-900">{activity.description}</p>
                     <p className="text-sm text-gray-500">
-                      {action.count} items need attention
+                      {activity.user} - {activity.action}
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant={action.actionColor === "text-gray-900" ? "outline" : "ghost"}
-                  className={action.actionColor}
-                >
-                  {action.action}
-                </Button>
+                <span className="text-sm text-gray-400">
+                  {new Date(activity.timestamp).toLocaleDateString()}
+                </span>
               </div>
             ))}
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 }

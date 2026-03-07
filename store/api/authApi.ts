@@ -2,7 +2,6 @@ import { baseApi } from "./baseApi";
 import type {
   LoginRequest,
   LoginResponse,
-  GoogleLoginRequest,
   SendOtpRequest,
   SendOtpResponse,
   VerifyOtpRequest,
@@ -21,19 +20,6 @@ export const authApi = baseApi.injectEndpoints({
         url: "/accounts/login/",
         method: "POST",
         body: credentials,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      }),
-    }),
-
-    // Google Login
-    googleLogin: builder.mutation<LoginResponse, GoogleLoginRequest>({
-      query: (data) => ({
-        url: "/accounts/login/google/",
-        method: "POST",
-        body: data,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -97,7 +83,6 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
-  useGoogleLoginMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,

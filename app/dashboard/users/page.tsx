@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -17,12 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -48,214 +41,98 @@ import {
   Eye,
   Pencil,
   Trash2,
-  MoreVertical,
-  ChevronDown,
 } from "lucide-react";
-import { User } from "@/api/users.api";
-
-// Mock users data
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "John Smith",
-    email: "john.smith@email.com",
-    sport: "Golf",
-    skillLevel: "Intermediate",
-    plan: "Monthly",
-    status: "Active",
-    videos: 24,
-    engagement: 87,
-    createdAt: "2024-01-15",
-    lastActive: "2024-02-01",
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah.j@email.com",
-    sport: "Golf",
-    skillLevel: "Beginner",
-    plan: "Yearly",
-    status: "Active",
-    videos: 18,
-    engagement: 92,
-    createdAt: "2024-01-10",
-    lastActive: "2024-02-01",
-  },
-  {
-    id: "3",
-    name: "Mike Davis",
-    email: "mdavis@email.com",
-    sport: "Golf",
-    skillLevel: "Advanced",
-    plan: "3-Month",
-    status: "Active",
-    videos: 42,
-    engagement: 95,
-    createdAt: "2023-12-20",
-    lastActive: "2024-02-01",
-  },
-  {
-    id: "4",
-    name: "Emily Wilson",
-    email: "emily.w@email.com",
-    sport: "Golf",
-    skillLevel: "Intermediate",
-    plan: "Free",
-    status: "Active",
-    videos: 8,
-    engagement: 68,
-    createdAt: "2024-01-25",
-    lastActive: "2024-01-30",
-  },
-  {
-    id: "5",
-    name: "David Brown",
-    email: "dbrown@email.com",
-    sport: "Golf",
-    skillLevel: "Beginner",
-    plan: "Monthly",
-    status: "Suspended",
-    videos: 15,
-    engagement: 45,
-    createdAt: "2024-01-05",
-    lastActive: "2024-01-20",
-  },
-  {
-    id: "6",
-    name: "Lisa Anderson",
-    email: "l.anderson@email.com",
-    sport: "Golf",
-    skillLevel: "Advanced",
-    plan: "Yearly",
-    status: "Active",
-    videos: 67,
-    engagement: 98,
-    createdAt: "2023-11-15",
-    lastActive: "2024-02-01",
-  },
-  {
-    id: "7",
-    name: "Robert Taylor",
-    email: "rtaylor@email.com",
-    sport: "Golf",
-    skillLevel: "Intermediate",
-    plan: "School",
-    status: "Active",
-    videos: 31,
-    engagement: 84,
-    createdAt: "2024-01-12",
-    lastActive: "2024-02-01",
-  },
-  {
-    id: "8",
-    name: "Jennifer Lee",
-    email: "jlee@email.com",
-    sport: "Golf",
-    skillLevel: "Beginner",
-    plan: "Free",
-    status: "Active",
-    videos: 5,
-    engagement: 72,
-    createdAt: "2024-01-28",
-    lastActive: "2024-02-01",
-  },
-];
-
-const planColors: Record<string, string> = {
-  Free: "bg-gray-100 text-gray-700",
-  Monthly: "bg-emerald-100 text-emerald-700",
-  "3-Month": "bg-orange-100 text-orange-700",
-  Yearly: "bg-red-100 text-red-700",
-  School: "bg-emerald-100 text-emerald-700",
-};
+import {
+  useGetUsersQuery,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  type ApiUser,
+} from "@/store/api/usersApi";
+import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
   Active: "bg-emerald-100 text-emerald-700",
-  Suspended: "bg-red-100 text-red-700",
-  Inactive: "bg-gray-100 text-gray-700",
+  Inactive: "bg-red-100 text-red-700",
 };
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [planFilter, setPlanFilter] = useState<string>("all");
+
+  const { data: users = [], isLoading } = useGetUsersQuery({ search: searchQuery || undefined });
+  const [updateUser] = useUpdateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   // Modal states
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
     name: "",
-    email: "",
-    sport: "",
-    skillLevel: "" as User["skillLevel"],
-    plan: "" as User["plan"],
-    status: "" as User["status"],
+    phone: "",
+    is_active: true,
   });
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || user.status === statusFilter;
-    const matchesPlan = planFilter === "all" || user.plan === planFilter;
-    return matchesSearch && matchesStatus && matchesPlan;
+    if (statusFilter === "all") return true;
+    if (statusFilter === "Active") return user.is_active;
+    if (statusFilter === "Inactive") return !user.is_active;
+    return true;
   });
 
   const stats = {
     total: users.length,
-    active: users.filter((u) => u.status === "Active").length,
-    paid: users.filter((u) => u.plan !== "Free").length,
-    avgEngagement: Math.round(
-      users.reduce((acc, u) => acc + u.engagement, 0) / users.length
-    ),
+    active: users.filter((u) => u.is_active).length,
+    paid: users.filter((u) => u.plan !== null).length,
+    admins: users.filter((u) => u.role === "Admin").length,
   };
 
-  const handleView = (user: User) => {
+  const handleView = (user: ApiUser) => {
     setSelectedUser(user);
     setViewModalOpen(true);
   };
 
-  const handleEdit = (user: User) => {
+  const handleEdit = (user: ApiUser) => {
     setSelectedUser(user);
     setEditForm({
       name: user.name,
-      email: user.email,
-      sport: user.sport,
-      skillLevel: user.skillLevel,
-      plan: user.plan,
-      status: user.status,
+      phone: user.phone || "",
+      is_active: user.is_active,
     });
     setEditModalOpen(true);
   };
 
-  const handleDelete = (user: User) => {
+  const handleDelete = (user: ApiUser) => {
     setSelectedUser(user);
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedUser) {
-      setUsers(users.filter((u) => u.id !== selectedUser.id));
-      setDeleteModalOpen(false);
-      setSelectedUser(null);
+      try {
+        await deleteUser(selectedUser.id).unwrap();
+        toast.success("User deleted successfully");
+        setDeleteModalOpen(false);
+        setSelectedUser(null);
+      } catch {
+        toast.error("Failed to delete user");
+      }
     }
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (selectedUser) {
-      setUsers(
-        users.map((u) =>
-          u.id === selectedUser.id ? { ...u, ...editForm } : u
-        )
-      );
-      setEditModalOpen(false);
-      setSelectedUser(null);
+      try {
+        await updateUser({ userId: selectedUser.id, data: editForm }).unwrap();
+        toast.success("User updated successfully");
+        setEditModalOpen(false);
+        setSelectedUser(null);
+      } catch {
+        toast.error("Failed to update user");
+      }
     }
   };
 
@@ -267,6 +144,15 @@ export default function UsersPage() {
       .toUpperCase();
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Users Management" description="Manage and monitor all platform users" />
+        <div className="flex items-center justify-center h-64 text-gray-500">Loading users...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -276,34 +162,10 @@ export default function UsersPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Users"
-          value={stats.total}
-          icon={Users}
-          iconColor="text-blue-600"
-          iconBgColor="bg-blue-50"
-        />
-        <StatsCard
-          title="Active Users"
-          value={stats.active}
-          icon={UserCheck}
-          iconColor="text-emerald-600"
-          iconBgColor="bg-emerald-50"
-        />
-        <StatsCard
-          title="Paid Subscribers"
-          value={stats.paid}
-          icon={CreditCard}
-          iconColor="text-purple-600"
-          iconBgColor="bg-purple-50"
-        />
-        <StatsCard
-          title="Avg Engagement"
-          value={`${stats.avgEngagement}%`}
-          icon={TrendingUp}
-          iconColor="text-orange-600"
-          iconBgColor="bg-orange-50"
-        />
+        <StatsCard title="Total Users" value={stats.total} icon={Users} iconColor="text-blue-600" iconBgColor="bg-blue-50" />
+        <StatsCard title="Active Users" value={stats.active} icon={UserCheck} iconColor="text-emerald-600" iconBgColor="bg-emerald-50" />
+        <StatsCard title="Paid Subscribers" value={stats.paid} icon={CreditCard} iconColor="text-purple-600" iconBgColor="bg-purple-50" />
+        <StatsCard title="Admins" value={stats.admins} icon={TrendingUp} iconColor="text-orange-600" iconBgColor="bg-orange-50" />
       </div>
 
       {/* Filters */}
@@ -320,21 +182,7 @@ export default function UsersPage() {
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Suspended">Suspended</SelectItem>
               <SelectItem value="Inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={planFilter} onValueChange={setPlanFilter}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Plan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Free">Free</SelectItem>
-              <SelectItem value="Monthly">Monthly</SelectItem>
-              <SelectItem value="3-Month">3-Month</SelectItem>
-              <SelectItem value="Yearly">Yearly</SelectItem>
-              <SelectItem value="School">School</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -342,7 +190,7 @@ export default function UsersPage() {
           <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search users, videos, emails..."
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full sm:w-[250px] lg:w-[300px] pl-10"
@@ -359,30 +207,14 @@ export default function UsersPage() {
         <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                User
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Sport
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Skill Level
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Plan
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Status
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Videos
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Engagement
-              </TableHead>
-              <TableHead className="text-xs font-medium uppercase text-gray-500">
-                Actions
-              </TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">User</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Sport</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Skill Level</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Plan</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Role</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Status</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Joined</TableHead>
+              <TableHead className="text-xs font-medium uppercase text-gray-500">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -401,61 +233,35 @@ export default function UsersPage() {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-gray-600">{user.sport}</TableCell>
-                <TableCell className="text-gray-600">{user.skillLevel}</TableCell>
+                <TableCell className="text-gray-600">{user.sport || "—"}</TableCell>
+                <TableCell className="text-gray-600">{user.skill_level || "—"}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={planColors[user.plan] || "bg-gray-100 text-gray-700"}
-                  >
-                    {user.plan}
+                  <Badge variant="secondary" className={user.plan ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"}>
+                    {user.plan?.name || "Free"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={statusColors[user.status]}
-                  >
-                    {user.status}
+                  <Badge variant="secondary" className={user.role === "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}>
+                    {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-gray-600">{user.videos}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress
-                      value={user.engagement}
-                      className="h-2 w-20"
-                      indicatorClassName="bg-[#0F744F]"
-                    />
-                    <span className="text-sm">
-                      {user.engagement}%
-                    </span>
-                  </div>
+                  <Badge variant="secondary" className={user.is_active ? statusColors.Active : statusColors.Inactive}>
+                    {user.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-gray-600">
+                  {new Date(user.date_joined).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleView(user)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleView(user)}>
                       <Eye className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEdit(user)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
                       <Pencil className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleDelete(user)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(user)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
@@ -488,39 +294,39 @@ export default function UsersPage() {
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div>
                   <p className="text-sm text-gray-500">Sport</p>
-                  <p className="font-medium">{selectedUser.sport}</p>
+                  <p className="font-medium">{selectedUser.sport || "—"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Skill Level</p>
-                  <p className="font-medium">{selectedUser.skillLevel}</p>
+                  <p className="font-medium">{selectedUser.skill_level || "—"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Plan</p>
-                  <Badge className={planColors[selectedUser.plan]}>
-                    {selectedUser.plan}
+                  <Badge className={selectedUser.plan ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"}>
+                    {selectedUser.plan?.name || "Free"}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Status</p>
-                  <Badge className={statusColors[selectedUser.status]}>
-                    {selectedUser.status}
+                  <Badge className={selectedUser.is_active ? statusColors.Active : statusColors.Inactive}>
+                    {selectedUser.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Videos Uploaded</p>
-                  <p className="font-medium">{selectedUser.videos}</p>
+                  <p className="text-sm text-gray-500">Role</p>
+                  <p className="font-medium">{selectedUser.role}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Engagement</p>
-                  <p className="font-medium">{selectedUser.engagement}%</p>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-medium">{selectedUser.phone || "—"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Member Since</p>
-                  <p className="font-medium">{selectedUser.createdAt}</p>
+                  <p className="font-medium">{new Date(selectedUser.date_joined).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Last Active</p>
-                  <p className="font-medium">{selectedUser.lastActive}</p>
+                  <p className="text-sm text-gray-500">Last Login</p>
+                  <p className="font-medium">{selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleDateString() : "Never"}</p>
                 </div>
               </div>
             </div>
@@ -537,97 +343,31 @@ export default function UsersPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                value={editForm.name}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, name: e.target.value })
-                }
-              />
+              <Input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={editForm.email}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, email: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-sport">Sport</Label>
-              <Input
-                id="edit-sport"
-                value={editForm.sport}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, sport: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Skill Level</Label>
-              <Select
-                value={editForm.skillLevel}
-                onValueChange={(value) =>
-                  setEditForm({ ...editForm, skillLevel: value as User["skillLevel"] })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select skill level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Plan</Label>
-              <Select
-                value={editForm.plan}
-                onValueChange={(value) =>
-                  setEditForm({ ...editForm, plan: value as User["plan"] })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Free">Free</SelectItem>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="3-Month">3-Month</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
-                  <SelectItem value="School">School</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-phone">Phone</Label>
+              <Input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
               <Select
-                value={editForm.status}
-                onValueChange={(value) =>
-                  setEditForm({ ...editForm, status: value as User["status"] })
-                }
+                value={editForm.is_active ? "active" : "inactive"}
+                onValueChange={(value) => setEditForm({ ...editForm, is_active: value === "active" })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Suspended">Suspended</SelectItem>
-                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter className="flex gap-3">
             <Button onClick={saveEdit} className="bg-[#1D4ED8] hover:bg-[#1e40af] flex-1">Save Changes</Button>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
