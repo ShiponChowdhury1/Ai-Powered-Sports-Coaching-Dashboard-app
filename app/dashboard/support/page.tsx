@@ -115,7 +115,7 @@ export default function SupportPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Support & Engagement" description="Manage support tickets and user engagement" />
+        <PageHeader title="Help & Support" description="Manage support tickets and user engagement" />
         <div className="flex items-center justify-center h-64 text-gray-500">Loading...</div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function SupportPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Support & Engagement"
+        title="Help & Support"
         description="Manage support tickets and user engagement"
       />
 
@@ -192,9 +192,20 @@ export default function SupportPage() {
                   <Badge className={priorityColors[ticket.priority] || "bg-gray-100 text-gray-700"}>{ticket.priority}</Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge className={statusColors[ticket.status] || "bg-gray-100 text-gray-700"}>
-                    {statusLabels[ticket.status] || ticket.status}
-                  </Badge>
+                 <Select
+                      value={ticket.status}
+                      onValueChange={(value) => handleStatusChange(ticket.id, value)}
+                    >
+                      <SelectTrigger className="h-8 w-[130px] text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OPEN">Open</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="RESOLVED">Resolved</SelectItem>
+                        <SelectItem value="CLOSED">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
                 </TableCell>
                 <TableCell className="text-gray-500">{new Date(ticket.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>
@@ -207,20 +218,7 @@ export default function SupportPage() {
                     >
                       <Eye className="h-4 w-4 text-gray-500" />
                     </Button>
-                    <Select
-                      value={ticket.status}
-                      onValueChange={(value) => handleStatusChange(ticket.id, value)}
-                    >
-                      <SelectTrigger className="w-[120px] h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OPEN">Open</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                        <SelectItem value="RESOLVED">Resolved</SelectItem>
-                        <SelectItem value="CLOSED">Closed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                   
                   </div>
                 </TableCell>
               </TableRow>

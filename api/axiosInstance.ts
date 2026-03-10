@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.sportcoach.ai/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.12.28:8001/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 // Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

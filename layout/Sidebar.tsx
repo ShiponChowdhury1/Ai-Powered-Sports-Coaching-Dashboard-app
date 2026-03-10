@@ -8,13 +8,14 @@ import {
   LayoutDashboard,
   Users,
   CreditCard,
-  BookOpen,
   MessageSquare,
   Settings,
   X,
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
+  ShieldCheck,
+  Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -50,14 +51,25 @@ const sidebarItems = [
     href: "/dashboard/subscribers",
     icon: Users,
   },
-  {
-    title: "Subscriptions & Payments",
+
+  // {
+  //   title: "Feature Access Control",
+  //   href: "/dashboard/feature-access",
+  //   icon: ShieldCheck,
+  // },
+
+   {
+    title: "Subscriptions",
     href: "/dashboard/subscriptions",
     icon: CreditCard,
   },
-  
+  // {
+  //   title: "Videos & Uploads",
+  //   href: "/dashboard/videos",
+  //   icon: Video,
+  // },
   {
-    title: "Support & Engagement",
+    title: "Help & Support",
     href: "/dashboard/support",
     icon: MessageSquare,
   },
@@ -95,7 +107,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       isCollapsed ? "w-[80px]" : "w-[256px]"
     )}>
       {/* Logo */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4">
+      <div className="relative flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4">
         <Link href="/dashboard" className="flex items-center">
           {isCollapsed ? (
             <Image src="/auth/toggle.png" alt="Logo" width={40} height={40} />
@@ -113,19 +125,16 @@ export function Sidebar({ onClose }: SidebarProps) {
             <X className="h-5 w-5" />
           </Button>
         )}
-      </div>
-
-      {/* Collapse Toggle Button (Desktop Only) */}
-      <div className={cn("hidden lg:flex px-3 py-3", isCollapsed ? "justify-center" : "justify-end")}>
+        {/* Collapse Toggle Button (Desktop Only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#F3F4F6] text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 transition-all duration-200"
+          className="hidden lg:flex absolute -right-[18px] top-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-gray-500 shadow-sm hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-300 transition-all duration-200"
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-5 w-5" />
+            <PanelLeftOpen className="h-4 w-4" />
           ) : (
-            <PanelLeftClose className="h-5 w-5" />
+            <PanelLeftClose className="h-4 w-4" />
           )}
         </button>
       </div>
@@ -172,16 +181,8 @@ export function Sidebar({ onClose }: SidebarProps) {
       <div className="border-t border-[#E5E7EB] px-4 py-4 space-y-3">
         {!isCollapsed && profile && (
           <div className="flex items-center gap-3 px-2">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={profile.image} alt={profile.name} />
-              <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                {profile.name?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{profile.name}</p>
-              <p className="text-xs text-gray-500 truncate">{profile.email}</p>
-            </div>
+            
+          
           </div>
         )}
         {!isCollapsed ? (

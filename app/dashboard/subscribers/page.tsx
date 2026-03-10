@@ -4,6 +4,9 @@ import { useState } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -19,14 +22,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ConfirmModal } from "@/components/common/ConfirmModal";
-import { Search, MoreVertical, Trash2, ToggleLeft, ToggleRight, Mail } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Search, MoreVertical, ToggleLeft, ToggleRight, Mail, Send, Upload } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentPage, setSearchQuery } from "@/features/subscribers/subscribersSlice";
 import {
   useGetSubscribersQuery,
-  useDeleteSubscriberMutation,
   useToggleSubscriberStatusMutation,
+  useSendMessageMutation,
 } from "@/store/api/subscribersApi";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -38,33 +47,23 @@ export default function SubscribersPage() {
     page: currentPage,
     search: searchQuery,
   });
-  const [deleteSubscriber] = useDeleteSubscriberMutation();
   const [toggleStatus] = useToggleSubscriberStatusMutation();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedSubscriberId, setSelectedSubscriberId] = useState<number | null>(null);
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
   const [localSearch, setLocalSearch] = useState(searchQuery);
+
+  // Send Message modal state
+  const [sendMessageOpen, setSendMessageOpen] = useState(false);
+  const [messageRecipientId, setMessageRecipientId] = useState<number | null>(null);
+  const [messageRecipientEmail, setMessageRecipientEmail] = useState("");
+  const [messageSubject, setMessageSubject] = useState("");
+  const [messageBody, setMessageBody] = useState("");
+  const [messageAttachment, setMessageAttachment] = useState<File | null>(null);
+  const [sendTestEmail, setSendTestEmail] = useState(false);
 
   const handleSearch = () => {
     dispatch(setSearchQuery(localSearch));
   };
 
-  const handleDeleteClick = (id: number) => {
-    setSelectedSubscriberId(id);
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedSubscriberId) return;
-    
-    try {
-      await deleteSubscriber(selectedSubscriberId).unwrap();
-      toast.success("Subscriber deleted successfully");
-      setDeleteModalOpen(false);
-      setSelectedSubscriberId(null);
-    } catch (error) {
-      toast.error("Failed to delete subscriber");
-    }
-  };
 
   const handleToggleStatus = async (id: number) => {
     try {
@@ -72,6 +71,36 @@ export default function SubscribersPage() {
       toast.success("Subscriber status updated");
     } catch (error) {
       toast.error("Failed to update subscriber status");
+    }
+  };
+
+  const handleSendMessage = (subscriber: { id: number; email: string }) => {
+    setMessageRecipientId(subscriber.id);
+    setMessageRecipientEmail(subscriber.email);
+    setMessageSubject("");
+    setMessageBody("");
+    setMessageAttachment(null);
+    setSendTestEmail(false);
+    setSendMessageOpen(true);
+  };
+
+  const handleSendMessageSubmit = async () => {
+    if (!messageSubject.trim() || !messageBody.trim()) {
+      toast.error("Subject and message are required");
+      return;
+    }
+    try {
+      const formData = new FormData();
+      if (messageRecipientId) formData.append("subscriber_id", String(messageRecipientId));
+      formData.append("subject", messageSubject);
+      formData.append("message", messageBody);
+      if (messageAttachment) formData.append("attachment", messageAttachment);
+      if (sendTestEmail) formData.append("send_test", "true");
+      await sendMessage(formData).unwrap();
+      toast.success("Message sent successfully");
+      setSendMessageOpen(false);
+    } catch {
+      toast.error("Failed to send message");
     }
   };
 
@@ -184,11 +213,10 @@ export default function SubscribersPage() {
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleDeleteClick(subscriber.id)}
-                          className="text-red-600 focus:text-red-600"
+                          onClick={() => handleSendMessage(subscriber)}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Message
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -227,17 +255,79 @@ export default function SubscribersPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmModal
-        open={deleteModalOpen}
-        onOpenChange={setDeleteModalOpen}
-        title="Delete Subscriber"
-        description="Are you sure you want to delete this subscriber? This action cannot be undone."
-        onConfirm={handleDeleteConfirm}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-      />
+      {/* Send Message Modal */}
+      <Dialog open={sendMessageOpen} onOpenChange={setSendMessageOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">Send Message</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Recipients</Label>
+              <div className="flex items-center h-10 px-3 rounded-md border border-gray-200 bg-gray-50 text-sm text-gray-600">
+                {messageRecipientEmail || "0 subscribers selected"}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="msg-subject" className="text-sm font-medium text-gray-700">Subject</Label>
+              <Input
+                id="msg-subject"
+                placeholder="Enter email subject"
+                value={messageSubject}
+                onChange={(e) => setMessageSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="msg-body" className="text-sm font-medium text-gray-700">Message</Label>
+              <Textarea
+                id="msg-body"
+                placeholder="Type your message here..."
+                value={messageBody}
+                onChange={(e) => setMessageBody(e.target.value)}
+                rows={6}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Attachment (Optional)</Label>
+              <label
+                htmlFor="msg-attachment"
+                className="flex items-center justify-center gap-2 h-10 rounded-md border border-dashed border-gray-300 bg-white text-sm text-gray-500 cursor-pointer hover:border-gray-400 transition-colors"
+              >
+                <Upload className="h-4 w-4" />
+                {messageAttachment ? messageAttachment.name : "Click to upload file"}
+              </label>
+              <input
+                id="msg-attachment"
+                type="file"
+                className="hidden"
+                onChange={(e) => setMessageAttachment(e.target.files?.[0] || null)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="send-test"
+                checked={sendTestEmail}
+                onCheckedChange={(checked) => setSendTestEmail(checked as boolean)}
+              />
+              <label htmlFor="send-test" className="text-sm text-gray-600">
+                Send a test email to yourself first
+              </label>
+            </div>
+          </div>
+          <DialogFooter className="gap-3 pt-2">
+            <Button variant="outline" onClick={() => setSendMessageOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendMessageSubmit}
+              disabled={isSending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {isSending ? "Sending..." : "Send Message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

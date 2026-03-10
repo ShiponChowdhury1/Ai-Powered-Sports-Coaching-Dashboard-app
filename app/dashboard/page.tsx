@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
-import { Users, UserCheck, UserPlus, Activity, AlertCircle } from "lucide-react";
+import { Users, UserCheck, UserPlus, Activity, CalendarPlus, CalendarRange } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchDashboardStats,
@@ -50,7 +50,7 @@ export default function DashboardPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
           title="Total Users"
           value={loading ? "..." : (stats?.total_users?.toLocaleString() ?? "0")}
@@ -64,6 +64,20 @@ export default function DashboardPage() {
           icon={UserCheck}
           iconColor="text-blue-600"
           iconBgColor="bg-blue-50"
+        />
+        <StatsCard
+          title="New Users Today"
+          value={loading ? "..." : (stats?.new_users_today?.toLocaleString() ?? "0")}
+          icon={CalendarPlus}
+          iconColor="text-orange-600"
+          iconBgColor="bg-orange-50"
+        />
+        <StatsCard
+          title="New Users This Week"
+          value={loading ? "..." : (stats?.new_users_this_week?.toLocaleString() ?? "0")}
+          icon={CalendarRange}
+          iconColor="text-indigo-600"
+          iconBgColor="bg-indigo-50"
         />
         <StatsCard
           title="Total Subscribers"

@@ -30,6 +30,13 @@ export const subscribersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Subscribers"],
     }),
+    sendMessage: builder.mutation<void, FormData>({
+      query: (formData) => ({
+        url: `/subscribers/send-message/`,
+        method: "POST",
+        body: formData,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -38,4 +45,5 @@ export const {
   useGetSubscribersQuery,
   useDeleteSubscriberMutation,
   useToggleSubscriberStatusMutation,
+  useSendMessageMutation,
 } = subscribersApi;

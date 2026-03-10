@@ -116,9 +116,9 @@ export default function SettingsPage() {
   const menuItems = [
     { id: "admin-info" as SettingsTab, label: "Admin Information" },
     { id: "change-password" as SettingsTab, label: "Change Password" },
-    { id: "notification" as SettingsTab, label: "Notification" },
+    { id: "notification" as SettingsTab, label: "Notifications" },
     { id: "privacy-policy" as SettingsTab, label: "Privacy Policy" },
-    { id: "terms" as SettingsTab, label: "trams & Conditions" },
+    { id: "terms" as SettingsTab, label: "Terms & Conditions" },
   ];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

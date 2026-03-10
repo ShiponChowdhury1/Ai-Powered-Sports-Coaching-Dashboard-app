@@ -54,17 +54,17 @@ export interface ReportData {
 
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await axiosInstance.get("/api/dashboard/stats/");
+    const response = await axiosInstance.get("/dashboard/stats/");
     return response.data;
   },
 
   getUserStats: async (): Promise<UserStats> => {
-    const response = await axiosInstance.get("/api/dashboard/stats/users/");
+    const response = await axiosInstance.get("/dashboard/stats/users/");
     return response.data;
   },
 
   getUserRegistrationChart: async (days: number = 30): Promise<ChartData> => {
-    const response = await axiosInstance.get("/api/dashboard/stats/chart/users/", {
+    const response = await axiosInstance.get("/dashboard/stats/chart/users/", {
       params: { days },
     });
     return response.data;
@@ -75,7 +75,7 @@ export const dashboardApi = {
     dateFrom?: string,
     dateTo?: string
   ): Promise<ReportData> => {
-    const response = await axiosInstance.get("/api/dashboard/reports/", {
+    const response = await axiosInstance.get("/dashboard/reports/", {
       params: {
         report_type: reportType,
         ...(dateFrom && { date_from: dateFrom }),
