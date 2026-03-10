@@ -39,7 +39,7 @@ import {
   Filter,
   Search,
   Eye,
-  Pencil,
+  SquarePen,
   Trash2,
 } from "lucide-react";
 import {
@@ -259,7 +259,7 @@ export default function UsersPage() {
                       <Eye className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
-                      <Pencil className="h-4 w-4" style={{ color: "#0F744F" }} />
+                      <SquarePen className="h-4 w-4" style={{ color: "#0F744F" }} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(user)}>
                       <Trash2 className="h-4 w-4 text-red-500" />

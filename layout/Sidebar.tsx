@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -11,8 +12,8 @@ import {
   MessageSquare,
   Settings,
   X,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -54,11 +55,7 @@ const sidebarItems = [
     href: "/dashboard/subscriptions",
     icon: CreditCard,
   },
-  {
-    title: "Training Content",
-    href: "/dashboard/training",
-    icon: BookOpen,
-  },
+  
   {
     title: "Support & Engagement",
     href: "/dashboard/support",
@@ -98,13 +95,12 @@ export function Sidebar({ onClose }: SidebarProps) {
       isCollapsed ? "w-[80px]" : "w-[256px]"
     )}>
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b border-[#E5E7EB] px-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-900">
-            {isCollapsed ? "M" : "Mait"}
-          </span>
-          {!isCollapsed && (
-            <span className="text-xl font-bold text-emerald-600">Club</span>
+      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4">
+        <Link href="/dashboard" className="flex items-center">
+          {isCollapsed ? (
+            <Image src="/auth/toggle.png" alt="Logo" width={40} height={40} />
+          ) : (
+            <Image src="/auth/logo.png" alt="Logo" width={140} height={40} style={{ objectFit: 'contain' }} />
           )}
         </Link>
         {onClose && (
@@ -120,19 +116,18 @@ export function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Collapse Toggle Button (Desktop Only) */}
-      <div className="hidden lg:flex justify-end px-2 py-3 border-b border-[#E5E7EB]">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9 rounded-lg border-[#E5E7EB] hover:bg-emerald-50 hover:border-emerald-600 hover:text-emerald-600 transition-all"
+      <div className={cn("hidden lg:flex px-3 py-3", isCollapsed ? "justify-center" : "justify-end")}>
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="h-9 w-9 flex items-center justify-center rounded-lg bg-[#F3F4F6] text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 transition-all duration-200"
         >
           {isCollapsed ? (
-            <ChevronRight className="h-5 w-5" />
+            <PanelLeftOpen className="h-5 w-5" />
           ) : (
-            <ChevronLeft className="h-5 w-5" />
+            <PanelLeftClose className="h-5 w-5" />
           )}
-        </Button>
+        </button>
       </div>
 
       {/* Navigation */}
@@ -158,12 +153,14 @@ export function Sidebar({ onClose }: SidebarProps) {
                 )}
                 onClick={onClose}
               >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    isActive ? "text-emerald-600" : "text-gray-500"
-                  )}
-                />
+                <div className={cn(
+                  "flex items-center justify-center rounded-lg flex-shrink-0",
+                  isActive
+                    ? "bg-emerald-600 text-white h-8 w-8"
+                    : "text-gray-500 h-8 w-8"
+                )}>
+                  <Icon className="h-5 w-5" />
+                </div>
                 {!isCollapsed && <span>{item.title}</span>}
               </Link>
             );
@@ -172,7 +169,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       </ScrollArea>
 
       {/* Profile Section */}
-      <div className="border-t border-[#E5E7EB] p-4 space-y-3">
+      <div className="border-t border-[#E5E7EB] px-4 py-4 space-y-3">
         {!isCollapsed && profile && (
           <div className="flex items-center gap-3 px-2">
             <Avatar className="w-10 h-10">

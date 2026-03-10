@@ -10,7 +10,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useLoginMutation } from "@/store/api/authApi";
 import type { ApiError } from "@/types/auth.types";
 import { useAppDispatch } from "@/store/hooks";
@@ -29,7 +28,6 @@ export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [login, { isLoading }] = useLoginMutation();
 
@@ -161,31 +159,10 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Terms Checkbox */}
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="terms"
-            checked={agreedToTerms}
-            onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
-            className="mt-0.5"
-          />
-          <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-            I&apos;ve read and agree with the{" "}
-            <Link href="/terms" className="text-gray-900 underline font-medium">
-              Terms and Conditions
-            </Link>{" "}
-            and the{" "}
-            <Link href="/privacy" className="text-gray-900 underline font-medium">
-              Privacy Policy
-            </Link>
-            .
-          </label>
-        </div>
-
         {/* Login Button */}
         <Button
           type="submit"
-          disabled={isLoading || !agreedToTerms}
+          disabled={isLoading}
           className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base"
         >
           {isLoading ? "Logging in..." : "Login"}

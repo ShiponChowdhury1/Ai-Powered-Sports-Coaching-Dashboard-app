@@ -287,23 +287,23 @@ export default function SubscriptionsPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="planName">Plan Name</Label>
-                <Input id="planName" value={editingPlan.name} onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })} />
+                <Input id="planName" value={editingPlan.name ?? ""} onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Input id="description" value={editingPlan.description} onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })} />
+                <Input id="description" value={editingPlan.description ?? ""} onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="price">Price ($)</Label>
-                <Input id="price" type="number" value={editingPlan.price} onChange={(e) => setEditingPlan({ ...editingPlan, price: e.target.value })} />
+                <Input id="price" type="number" value={editingPlan.price ?? ""} onChange={(e) => setEditingPlan({ ...editingPlan, price: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="maxUsers">Max Users</Label>
-                <Input id="maxUsers" type="number" value={editingPlan.max_users} onChange={(e) => setEditingPlan({ ...editingPlan, max_users: parseInt(e.target.value) || 0 })} />
+                <Input id="maxUsers" type="number" value={editingPlan.max_users ?? ""} onChange={(e) => setEditingPlan({ ...editingPlan, max_users: parseInt(e.target.value) || 0 })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="maxStorage">Max Storage (GB)</Label>
-                <Input id="maxStorage" type="number" value={editingPlan.max_storage_gb} onChange={(e) => setEditingPlan({ ...editingPlan, max_storage_gb: parseInt(e.target.value) || 0 })} />
+                <Input id="maxStorage" type="number" value={editingPlan.max_storage_gb ?? ""} onChange={(e) => setEditingPlan({ ...editingPlan, max_storage_gb: parseInt(e.target.value) || 0 })} />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="isActive">Active</Label>
