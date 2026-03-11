@@ -5,7 +5,7 @@ export const subscribersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSubscribers: builder.query<SubscribersResponse, SubscribersListParams>({
       query: ({ page = 1, search = "" }) => {
-        const params: any = { page };
+        const params: Record<string, string | number> = { page };
         if (search) {
           params.search = search;
         }
@@ -37,6 +37,23 @@ export const subscribersApi = baseApi.injectEndpoints({
         body: formData,
       }),
     }),
+    sendPromotion: builder.mutation<{ message: string }, { id: number; subject: string; message: string; html_message?: string }>({
+      query: ({ id, subject, message, html_message }) => ({
+        url: `/subscribers/${id}/send-promotion/`,
+        method: "POST",
+        body: { subject, message, html_message },
+      }),
+    }),
+    bulkSendPromotion: builder.mutation<
+      { message: string; total_targeted: number; sent_successfully: number; failed_count: number; failed_emails: string[] },
+      { subscriber_ids: number[]; subject: string; message: string; html_message?: string }
+    >({
+      query: (body) => ({
+        url: `/subscribers/bulk-send-promotion/`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -46,4 +63,6 @@ export const {
   useDeleteSubscriberMutation,
   useToggleSubscriberStatusMutation,
   useSendMessageMutation,
+  useSendPromotionMutation,
+  useBulkSendPromotionMutation,
 } = subscribersApi;
