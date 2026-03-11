@@ -37,7 +37,7 @@ export const subscribersApi = baseApi.injectEndpoints({
         body: formData,
       }),
     }),
-    sendPromotion: builder.mutation<{ message: string }, { id: number; subject: string; message: string; html_message?: string }>({
+    sendPromotion: builder.mutation<{ message: string; status: string }, { id: number; subject: string; message: string; html_message?: string }>({
       query: ({ id, subject, message, html_message }) => ({
         url: `/subscribers/${id}/send-promotion/`,
         method: "POST",
@@ -45,7 +45,7 @@ export const subscribersApi = baseApi.injectEndpoints({
       }),
     }),
     bulkSendPromotion: builder.mutation<
-      { message: string; total_targeted: number; sent_successfully: number; failed_count: number; failed_emails: string[] },
+      { message: string; status: string },
       { subscriber_ids: number[]; subject: string; message: string; html_message?: string }
     >({
       query: (body) => ({
@@ -60,6 +60,7 @@ export const subscribersApi = baseApi.injectEndpoints({
 
 export const {
   useGetSubscribersQuery,
+  useLazyGetSubscribersQuery,
   useDeleteSubscriberMutation,
   useToggleSubscriberStatusMutation,
   useSendMessageMutation,

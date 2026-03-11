@@ -27,6 +27,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentPage, setSearchQuery } from "@/features/subscribers/subscribersSlice";
 import {
   useGetSubscribersQuery,
+  useLazyGetSubscribersQuery,
   useSendPromotionMutation,
   useBulkSendPromotionMutation,
 } from "@/store/api/subscribersApi";
@@ -40,17 +41,56 @@ export default function SubscribersPage() {
 
   const [sendPromotion, { isLoading: isSendingSingle }] = useSendPromotionMutation();
   const [bulkSendPromotion, { isLoading: isBulkSending }] = useBulkSendPromotionMutation();
+  const [fetchPage] = useLazyGetSubscribersQuery();
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
   // Checkbox selection
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectAllPages, setSelectAllPages] = useState(false);
   const allIds = data?.results.map((s) => s.id) ?? [];
   const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.includes(id));
   const isIndeterminate = selectedIds.length > 0 && !allSelected;
+  const totalCount = data?.count || 0;
+  const hasMultiplePages = totalCount > 10;
+  const showSelectAllBanner = allSelected && hasMultiplePages && !selectAllPages;
 
   const toggleSelectAll = () => {
-    setSelectedIds(allSelected ? [] : allIds);
+    if (allSelected) {
+      setSelectedIds([]);
+      setSelectAllPages(false);
+    } else {
+      setSelectedIds(allIds);
+    }
+  };
+
+  const handleSelectAllPages = async () => {
+    try {
+      const pageSize = 10;
+      const totalPages = Math.ceil(totalCount / pageSize);
+      const allIdsSet = new Set<number>(selectedIds);
+
+      const promises = [];
+      for (let p = 1; p <= totalPages; p++) {
+        promises.push(fetchPage({ page: p, search: searchQuery }).unwrap());
+      }
+      const results = await Promise.all(promises);
+      for (const result of results) {
+        for (const s of result.results) {
+          allIdsSet.add(s.id);
+        }
+      }
+
+      setSelectedIds(Array.from(allIdsSet));
+      setSelectAllPages(true);
+    } catch {
+      toast.error("Failed to select all subscribers");
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+    setSelectAllPages(false);
   };
 
   const toggleSelectOne = (id: number) => {
@@ -75,6 +115,7 @@ export default function SubscribersPage() {
   const handleSearch = () => {
     dispatch(setSearchQuery(localSearch));
     setSelectedIds([]);
+    setSelectAllPages(false);
   };
 
   const openSingleModal = (subscriber: { id: number; email: string }) => {
@@ -125,11 +166,10 @@ export default function SubscribersPage() {
         message: msgBody,
         html_message: msgHtml || undefined,
       }).unwrap();
-      toast.success(
-        `Sent to ${result.sent_successfully} subscriber(s).${result.failed_count > 0 ? ` ${result.failed_count} failed.` : ""}`
-      );
+      toast.success(result.message);
       setBulkModalOpen(false);
       setSelectedIds([]);
+      setSelectAllPages(false);
     } catch {
       toast.error("Failed to send bulk message");
     }
@@ -181,6 +221,32 @@ export default function SubscribersPage() {
 
       {/* Subscribers Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {/* Select All Pages Banner */}
+        {(showSelectAllBanner || selectAllPages) && (
+          <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2.5 text-sm text-center">
+            {selectAllPages ? (
+              <span className="text-emerald-800">
+                All <strong>{selectedIds.length}</strong> subscribers are selected.{" "}
+                <button
+                  onClick={handleClearSelection}
+                  className="text-emerald-600 hover:text-emerald-800 underline font-medium"
+                >
+                  Clear selection
+                </button>
+              </span>
+            ) : (
+              <span className="text-emerald-800">
+                All <strong>{allIds.length}</strong> subscribers on this page are selected.{" "}
+                <button
+                  onClick={handleSelectAllPages}
+                  className="text-emerald-600 hover:text-emerald-800 underline font-medium"
+                >
+                  Select all {totalCount} subscribers
+                </button>
+              </span>
+            )}
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
@@ -380,7 +446,6 @@ export default function SubscribersPage() {
                 className="border-gray-200 resize-none"
               />
             </div>
-
           </div>
           <div className="px-6 pb-6 flex justify-end gap-3">
             <Button variant="outline" onClick={() => setBulkModalOpen(false)} className="border-gray-200">
