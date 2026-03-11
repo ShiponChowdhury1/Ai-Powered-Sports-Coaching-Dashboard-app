@@ -28,11 +28,15 @@ import {
   AlertCircle,
   CheckCircle,
   Trash2,
+  Plus,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useGetSubscriptionPlansQuery,
   useGetSubscriptionStatsQuery,
   useGetAllSubscriptionsQuery,
+  useCreatePlanMutation,
   useUpdatePlanMutation,
   useDeletePlanMutation,
   type SubscriptionPlan,
@@ -50,13 +54,50 @@ export default function SubscriptionsPage() {
   const { data: plans = [], isLoading: plansLoading } = useGetSubscriptionPlansQuery();
   const { data: stats, isLoading: statsLoading } = useGetSubscriptionStatsQuery();
   const { data: subscriptions = [] } = useGetAllSubscriptionsQuery();
+  const [createPlan] = useCreatePlanMutation();
   const [updatePlan] = useUpdatePlanMutation();
   const [deletePlan] = useDeletePlanMutation();
 
+  const defaultNewPlan = {
+    name: "",
+    plan_type: "FREE",
+    description: "",
+    price: "",
+    billing_cycle: "MONTHLY",
+    max_users: 0,
+    max_storage_gb: 0,
+    is_active: true,
+    is_popular: false,
+  };
+
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newPlan, setNewPlan] = useState(defaultNewPlan);
+  const [isCreating, setIsCreating] = useState(false);
 
   const loading = plansLoading || statsLoading;
+
+  const handleCreatePlan = async () => {
+    if (!newPlan.name || !newPlan.price) {
+      toast.error("Plan name and price are required");
+      return;
+    }
+    setIsCreating(true);
+    try {
+      await createPlan({
+        ...newPlan,
+        features: {},
+      }).unwrap();
+      toast.success("Plan created successfully");
+      setIsCreateModalOpen(false);
+      setNewPlan(defaultNewPlan);
+    } catch {
+      toast.error("Failed to create plan");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const handleEditPlan = (plan: SubscriptionPlan) => {
     setEditingPlan({ ...plan });
@@ -159,7 +200,16 @@ export default function SubscriptionsPage() {
 
       {/* Subscription Plans */}
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Subscription Plans</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Subscription Plans</h2>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Plan
+          </Button>
+        </div>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <Card
@@ -276,6 +326,129 @@ export default function SubscriptionsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Create Plan Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={(open) => { setIsCreateModalOpen(open); if (!open) setNewPlan(defaultNewPlan); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Create Subscription Plan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Plan Name</Label>
+                <Input
+                  placeholder="e.g. Pro"
+                  value={newPlan.name}
+                  onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                  className="h-10 rounded-lg"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Price ($)</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={newPlan.price}
+                  onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                  className="h-10 rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Plan Type</Label>
+                <Select value={newPlan.plan_type} onValueChange={(v) => setNewPlan({ ...newPlan, plan_type: v })}>
+                  <SelectTrigger className="h-10 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FREE">FREE</SelectItem>
+                    <SelectItem value="BASIC">BASIC</SelectItem>
+                    <SelectItem value="PRO">PRO</SelectItem>
+                    <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Billing Cycle</Label>
+                <Select value={newPlan.billing_cycle} onValueChange={(v) => setNewPlan({ ...newPlan, billing_cycle: v })}>
+                  <SelectTrigger className="h-10 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MONTHLY">MONTHLY</SelectItem>
+                    <SelectItem value="YEARLY">YEARLY</SelectItem>
+                    <SelectItem value="WEEKLY">WEEKLY</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Description</Label>
+              <Textarea
+                placeholder="Describe this plan..."
+                value={newPlan.description}
+                onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                className="rounded-lg resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Max Users</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={newPlan.max_users || ""}
+                  onChange={(e) => setNewPlan({ ...newPlan, max_users: parseInt(e.target.value) || 0 })}
+                  className="h-10 rounded-lg"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Max Storage (GB)</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={newPlan.max_storage_gb || ""}
+                  onChange={(e) => setNewPlan({ ...newPlan, max_storage_gb: parseInt(e.target.value) || 0 })}
+                  className="h-10 rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-gray-800">Active</p>
+                <p className="text-xs text-gray-500">Make this plan available to users</p>
+              </div>
+              <Switch checked={newPlan.is_active} onCheckedChange={(v) => setNewPlan({ ...newPlan, is_active: v })} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-gray-800">Popular</p>
+                <p className="text-xs text-gray-500">Highlight as a popular plan</p>
+              </div>
+              <Switch checked={newPlan.is_popular} onCheckedChange={(v) => setNewPlan({ ...newPlan, is_popular: v })} />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)} className="flex-1 rounded-xl">Cancel</Button>
+            <Button
+              onClick={handleCreatePlan}
+              disabled={isCreating}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+            >
+              {isCreating ? "Creating..." : "Create Plan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Plan Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

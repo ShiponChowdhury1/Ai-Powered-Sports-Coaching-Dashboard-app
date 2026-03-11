@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, Menu, X, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -130,10 +130,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative"
+          className="relative h-11 w-11 bg-emerald-50 hover:bg-emerald-100 rounded-xl"
           onClick={() => setShowNotifications(true)}
         >
-          <Bell className="h-5 w-5 text-gray-600" />
+          <Bell className="h-7 w-7 text-emerald-600" />
           {notifications.length > 0 && (
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
               {notifications.length}
@@ -145,31 +145,41 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         {mounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
-                <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+              <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-3 py-2 h-auto overflow-hidden rounded-xl hover:bg-gray-100 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0">
+                <Avatar className="h-[68px] w-[68px] ring-1 ring-emerald-200">
                   <AvatarImage src={profile?.image} alt={profile?.name || user?.name || "Admin"} />
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold">
                     {profile?.name ? getInitials(profile.name) : user?.name ? getInitials(user.name) : "AD"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:flex flex-col items-start text-sm">
-                  <span className="font-medium text-gray-900">{profile?.name || user?.name || "Admin"}</span>
-                  <span className="text-xs text-gray-500">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
+                  <span className="font-semibold text-gray-900 leading-tight">{profile?.name || user?.name || "Admin"}</span>
+                  <span className="text-xs text-gray-400 leading-tight">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
                 </div>
+                <ChevronDown className="hidden sm:block h-4 w-4 text-gray-400 ml-0.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[222px] bg-[#FFFFFF] border-[#E5E7EB]">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-red-600 cursor-pointer"
-                onClick={() => setShowLogoutModal(true)}
+            <DropdownMenuContent align="end" className="w-52 bg-white border border-[#E5E7EB] shadow-lg rounded-xl p-1.5 overflow-hidden">
+              <DropdownMenuItem
+                onClick={() => router.push("/dashboard/settings")}
+                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors"
               >
-                Log out
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+                  <Settings className="h-4 w-4" />
+                </div>
+                <p className="text-sm font-medium">Settings</p>
+              </DropdownMenuItem>
+
+              <div className="my-1 border-t border-[#E5E7EB]" />
+
+              <DropdownMenuItem
+                onClick={() => setShowLogoutModal(true)}
+                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50">
+                  <LogOut className="h-4 w-4 text-red-500" />
+                </div>
+                <p className="text-sm font-medium">Log out</p>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

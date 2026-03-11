@@ -59,92 +59,94 @@ export default function ChangePassword() {
         <p className="text-sm text-gray-600 mt-1">Update your password to keep your account secure</p>
       </div>
 
-      <form onSubmit={handlePasswordChange} className="space-y-6">
-        {/* Current Password */}
-        <div className="space-y-2">
-          <Label htmlFor="currentPassword" className="text-gray-900 font-medium">
-            Current Password
-          </Label>
-          <div className="relative">
-            <Input
-              id="currentPassword"
-              type={showPasswords.oldPassword ? "text" : "password"}
-              placeholder="Enter current password"
-              value={passwordData.oldPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-              required
-              className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => toggle("oldPassword")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-            >
-              {showPasswords.oldPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+      <div className="w-full md:w-1/2 bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+        <form onSubmit={handlePasswordChange} className="space-y-5">
+          {/* Current Password */}
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword" className="text-gray-900 font-medium">
+              Current Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showPasswords.oldPassword ? "text" : "password"}
+                placeholder="Enter current password"
+                value={passwordData.oldPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                required
+                className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => toggle("oldPassword")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.oldPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* New Password */}
-        <div className="space-y-2">
-          <Label htmlFor="newPassword" className="text-gray-900 font-medium">
-            New Password
-          </Label>
-          <div className="relative">
-            <Input
-              id="newPassword"
-              type={showPasswords.newPassword ? "text" : "password"}
-              placeholder="Enter new password"
-              value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-              required
-              className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => toggle("newPassword")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-            >
-              {showPasswords.newPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+          {/* New Password */}
+          <div className="space-y-2">
+            <Label htmlFor="newPassword" className="text-gray-900 font-medium">
+              New Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showPasswords.newPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                required
+                className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => toggle("newPassword")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.newPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Confirm Password */}
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-gray-900 font-medium">
-            Confirm New Password
-          </Label>
-          <div className="relative">
-            <Input
-              id="confirmPassword"
-              type={showPasswords.confirmPassword ? "text" : "password"}
-              placeholder="Confirm new password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-              required
-              className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => toggle("confirmPassword")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-            >
-              {showPasswords.confirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-gray-900 font-medium">
+              Confirm New Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showPasswords.confirmPassword ? "text" : "password"}
+                placeholder="Confirm new password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                required
+                className="w-full h-[45px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => toggle("confirmPassword")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.confirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="flex justify-center pt-4">
-          <Button
-            type="submit"
-            disabled={isChangingPassword}
-            className="w-[226px] h-[52px] bg-emerald-600 hover:bg-emerald-700 text-white px-[82px] py-[14px] rounded-xl disabled:opacity-50"
-          >
-            {isChangingPassword ? "Updating..." : "Update Password"}
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-center pt-2">
+            <Button
+              type="submit"
+              disabled={isChangingPassword}
+              className="w-full h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl disabled:opacity-50"
+            >
+              {isChangingPassword ? "Updating..." : "Update Password"}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
