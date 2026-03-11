@@ -14,7 +14,7 @@ const getCsrfToken = () => {
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
   credentials: 'include', // Important for CSRF cookies
-  prepareHeaders: (headers, { getState }) => {
+  prepareHeaders: (headers) => {
     // Get CSRF token from cookie
     const csrfToken = getCsrfToken();
     if (csrfToken) {

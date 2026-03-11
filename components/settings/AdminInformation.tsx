@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,12 +18,12 @@ export default function AdminInformation({ selectedImage, onImageSaved }: AdminI
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
 
   const [profileData, setProfileData] = useState({ name: "", phone: "" });
+  const [initialized, setInitialized] = useState(false);
 
-  useEffect(() => {
-    if (profile) {
-      setProfileData({ name: profile.name, phone: profile.phone });
-    }
-  }, [profile]);
+  if (profile && !initialized) {
+    setProfileData({ name: profile.name, phone: profile.phone });
+    setInitialized(true);
+  }
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

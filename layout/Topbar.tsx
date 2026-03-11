@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, X, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Bell, Menu, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -53,14 +51,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
   // Fix hydration mismatch by only rendering dropdown after mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  // Reset showAll when closing notifications panel
   // Mark all notifications as read when opening the panel (Facebook-style)
+  const prevShowNotifications = useRef(showNotifications);
   useEffect(() => {
-    if (showNotifications && notifications.length > 0) {
-      // Mark all notifications as read when user opens the panel
+    if (showNotifications && !prevShowNotifications.current && notifications.length > 0) {
       notifications.forEach(async (notification) => {
         try {
           await markAsRead(notification.id).unwrap();
@@ -68,14 +66,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           console.warn("Could not mark notification as read:", error);
         }
       });
-      // Refetch to update the count
       setTimeout(() => refetchNotifications(), 500);
     }
-    
-    if (!showNotifications) {
-      setShowAllNotifications(false);
-    }
+    prevShowNotifications.current = showNotifications;
   }, [showNotifications, notifications, markAsRead, refetchNotifications]);
+
+  // Reset showAll when closing notifications panel
+  const handleCloseNotifications = () => {
+    setShowNotifications(false);
+    setShowAllNotifications(false);
+  };
 
   const handleLogout = () => {
     // Clear API cache before logging out
@@ -200,7 +200,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     </header>
 
     {/* Notifications Sheet */}
-    <Sheet open={showNotifications} onOpenChange={setShowNotifications}>
+    <Sheet open={showNotifications} onOpenChange={(open) => { if (!open) handleCloseNotifications(); else setShowNotifications(true); }}>
       <SheetContent className="w-full sm:max-w-[400px] bg-white">
         <SheetHeader>
           <SheetTitle className="text-xl font-semibold">Notifications</SheetTitle>

@@ -91,7 +91,7 @@ const authSlice = createSlice({
           if (userStr) {
             try {
               state.user = JSON.parse(userStr);
-            } catch (e) {
+            } catch {
               console.error("Failed to parse user from localStorage");
             }
           }

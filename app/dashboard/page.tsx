@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
 import { Users, UserCheck, UserPlus, Activity, CalendarPlus, CalendarRange } from "lucide-react";
@@ -19,8 +18,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
 
 export default function DashboardPage() {

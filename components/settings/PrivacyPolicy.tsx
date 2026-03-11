@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,15 +22,16 @@ export default function PrivacyPolicy() {
     meta_description: "",
   });
 
-  useEffect(() => {
-    if (privacyPolicy) {
-      setEditData({
-        title: privacyPolicy.title,
-        content: privacyPolicy.content,
-        meta_description: privacyPolicy.meta_description,
-      });
-    }
-  }, [privacyPolicy]);
+  const [initialized, setInitialized] = useState(false);
+
+  if (privacyPolicy && !initialized) {
+    setEditData({
+      title: privacyPolicy.title,
+      content: privacyPolicy.content,
+      meta_description: privacyPolicy.meta_description,
+    });
+    setInitialized(true);
+  }
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

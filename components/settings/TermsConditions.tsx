@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,15 +22,16 @@ export default function TermsConditions() {
     meta_description: "",
   });
 
-  useEffect(() => {
-    if (termsConditions) {
-      setEditData({
-        title: termsConditions.title,
-        content: termsConditions.content,
-        meta_description: termsConditions.meta_description,
-      });
-    }
-  }, [termsConditions]);
+  const [initialized, setInitialized] = useState(false);
+
+  if (termsConditions && !initialized) {
+    setEditData({
+      title: termsConditions.title,
+      content: termsConditions.content,
+      meta_description: termsConditions.meta_description,
+    });
+    setInitialized(true);
+  }
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

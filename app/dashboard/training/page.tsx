@@ -28,7 +28,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Upload,
   Calendar,
 } from "lucide-react";
 

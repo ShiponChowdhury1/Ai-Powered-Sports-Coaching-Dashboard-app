@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import type { UserProfile, UpdateProfileRequest, UpdateProfileResponse } from "@/types/profile.types";
+import type { UserProfile, UpdateProfileResponse } from "@/types/profile.types";
 
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

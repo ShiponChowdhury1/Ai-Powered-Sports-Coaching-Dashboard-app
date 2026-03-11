@@ -16,7 +16,6 @@ export default function VerifyOtpPage() {
   
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
@@ -34,10 +33,11 @@ export default function VerifyOtpPage() {
     if (resendTimer > 0) {
       const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
       return () => clearTimeout(timer);
-    } else {
-      setCanResend(true);
     }
   }, [resendTimer]);
+
+  // Enable resend when timer reaches 0
+  const canResendNow = resendTimer <= 0;
 
   const handleOtpChange = (index: number, value: string) => {
     // Only allow numbers
@@ -99,12 +99,11 @@ export default function VerifyOtpPage() {
   };
 
   const handleResend = async () => {
-    if (!canResend || !forgotPasswordEmail) return;
+    if (!canResendNow || !forgotPasswordEmail) return;
     
     try {
       const result = await sendOtp({ email: forgotPasswordEmail }).unwrap();
       setResendTimer(60);
-      setCanResend(false);
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
       toast.success(result.message || "OTP resent to your email!");
@@ -176,7 +175,7 @@ export default function VerifyOtpPage() {
         <div className="text-center">
           <p className="text-gray-600 text-sm">
             Didn&apos;t receive the code?{" "}
-            {canResend ? (
+            {canResendNow ? (
               <button
                 type="button"
                 onClick={handleResend}

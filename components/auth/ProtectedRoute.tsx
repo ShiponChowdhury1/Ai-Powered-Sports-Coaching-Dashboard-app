@@ -19,6 +19,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Initialize auth from localStorage on mount
   useEffect(() => {
     dispatch(initializeAuth());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsInitialized(true);
   }, [dispatch]);
 

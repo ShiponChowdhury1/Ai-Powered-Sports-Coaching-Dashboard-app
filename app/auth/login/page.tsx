@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useLoginMutation } from "@/store/api/authApi";
-import type { ApiError } from "@/types/auth.types";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/features/auth/authSlice";
 import { toast } from "sonner";
@@ -34,7 +33,6 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
