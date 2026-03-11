@@ -2,13 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVerifyOtpMutation, useSendOtpMutation } from "@/store/api/authApi";
 import type { ApiError } from "@/types/auth.types";
 import { useAppSelector } from "@/store/hooks";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -43,8 +44,21 @@ export default function VerifyOtpPage() {
     // Only allow numbers
     if (value && !/^\d+$/.test(value)) return;
 
+    // Handle multi-character input (paste via onChange)
+    if (value.length > 1) {
+      const chars = value.slice(0, 6 - index).split("");
+      const newOtp = [...otp];
+      chars.forEach((char, i) => {
+        if (index + i < 6) newOtp[index + i] = char;
+      });
+      setOtp(newOtp);
+      const focusIndex = Math.min(index + chars.length, 5);
+      inputRefs.current[focusIndex]?.focus();
+      return;
+    }
+
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // Only take the last character
+    newOtp[index] = value.slice(-1);
     setOtp(newOtp);
 
     // Auto-focus next input
@@ -126,11 +140,13 @@ export default function VerifyOtpPage() {
         minHeight: "304px",
       }}
     >
+      {/* Logo */}
+      <div className="flex justify-center mb-6">
+        <Image src="/auth/logo.png" alt="Logo" width={180} height={180} />
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-[#E8F5F0] rounded-full flex items-center justify-center mx-auto mb-4">
-          <KeyRound className="w-8 h-8 text-[#0F744F]" />
-        </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
           Verify OTP
         </h1>
@@ -152,7 +168,7 @@ export default function VerifyOtpPage() {
               }}
               type="text"
               inputMode="numeric"
-              maxLength={1}
+              autoComplete="one-time-code"
               value={digit}
               onChange={(e) => handleOtpChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}

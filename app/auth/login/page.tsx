@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -84,89 +85,108 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-2xl p-6 sm:p-10 w-full max-w-[470px] mx-4"
-      style={{
-        minHeight: "518px",
-      }}
-    >
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          Welcome Back Admin!
-        </h1>
-        <p className="text-gray-600">Sign in on your account</p>
-      </div>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Email */}
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-900 font-medium">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            {...register("email")}
-            className="w-full h-[48px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email.message}</p>
-          )}
+      <div
+        className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-10 w-full max-w-[470px] flex flex-col justify-center"
+        style={{ minHeight: "518px" }}
+      >
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image src="/auth/logo.png" alt="Logo" width={180} height={180} />
         </div>
 
-        {/* Password */}
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-gray-900 font-medium">
-            Password
-          </Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              {...register("password")}
-              className="w-full h-[48px] bg-[#F9FAFB] border-[#E5E7EB] rounded-xl px-4 py-3 pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Welcome Back Admin!
+          </h1>
+          <p className="text-gray-600">Sign in on your account</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email */}
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="text-gray-900 font-medium block"
             >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
+              Email
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              {...register("email", { required: "Email is required" })}
+              className="w-full h-[48px] bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+
+            {errors.email && (
+              <p className="text-red-500 text-sm">
+                {errors.email.message}
+              </p>
+            )}
           </div>
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password.message}</p>
-          )}
-        </div>
 
-        {/* Forgot Password Link */}
-        <div className="flex justify-end">
-          <Link
-            href="/auth/forgot-password"
-            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+          {/* Password */}
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-gray-900 font-medium block"
+            >
+              Password
+            </label>
+
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                {...register("password", {
+                  required: "Password is required",
+                })}
+                className="w-full h-[48px] bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
+
+            {errors.password && (
+              <p className="text-red-500 text-sm">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base transition"
           >
-            Forgot password?
-          </Link>
-        </div>
-
-        {/* Login Button */}
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full h-[48px] bg-[#0F744F] hover:bg-[#0d6344] text-white font-medium rounded-xl text-base"
-        >
-          {isLoading ? "Logging in..." : "Login"}
-        </Button>
-
-      </form>
-    </div>
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+      </div>
   );
 }

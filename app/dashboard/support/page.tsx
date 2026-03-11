@@ -177,7 +177,7 @@ export default function SupportPage() {
           <TableBody>
             {filteredTickets.map((ticket) => (
               <TableRow key={ticket.id} className="border-b border-[#E5E7EB]">
-                <TableCell className="font-medium text-gray-900">#{ticket.id}</TableCell>
+                <TableCell className="font-medium text-gray-900">{ticket.id}</TableCell>
                 <TableCell>
                   <div>
                     <p className="font-medium text-gray-900">{ticket.user_name}</p>

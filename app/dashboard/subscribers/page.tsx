@@ -226,7 +226,7 @@ export default function SubscribersPage() {
                       aria-label={`Select ${subscriber.email}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium text-gray-900">#{subscriber.id}</TableCell>
+                  <TableCell className="font-medium text-gray-900">{subscriber.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-gray-400" />

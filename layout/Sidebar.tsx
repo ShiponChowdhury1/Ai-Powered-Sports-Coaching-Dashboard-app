@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/features/auth/authSlice";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { baseApi } from "@/store/api/baseApi";
 
 const sidebarItems = [
@@ -101,11 +101,11 @@ export function Sidebar({ onClose }: SidebarProps) {
     <>
     <div className={cn(
       "flex h-full flex-col border-r-[1.11px] border-[#E5E7EB] bg-[#FFFFFF] transition-all duration-300",
-      isCollapsed ? "w-[80px]" : "w-[256px]"
+      isCollapsed ? "w-[86px]" : "w-[256px]"
     )}>
       {/* Logo */}
-      <div className="relative flex items-center justify-between border-b border-[#E5E7EB] px-4 py-4">
-        <Link href="/dashboard" className="flex items-center">
+      <div className="relative flex h-[86px] items-center justify-between border-b-[1.11px] border-[#E5E7EB] px-4">
+        <Link href="/dashboard" className="hidden lg:flex items-center">
           {isCollapsed ? (
             <Image src="/auth/toggle.png" alt="Logo" width={40} height={40} />
           ) : (
@@ -116,7 +116,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden h-9 w-9 rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-600 transition-colors"
             onClick={onClose}
           >
             <X className="h-5 w-5" />

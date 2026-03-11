@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useSendOtpMutation } from "@/store/api/authApi";
 import { useAppDispatch } from "@/store/hooks";
 import { setForgotPasswordEmail } from "@/features/auth/authSlice";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import type { ApiError } from "@/types/auth.types";
 
 const forgotPasswordSchema = z.object({
@@ -56,13 +57,18 @@ export default function ForgotPasswordPage() {
         minHeight: "300px",
       }}
     >
+      {/* Logo */}
+      <div className="flex justify-center mb-6">
+        <Image src="/auth/logo.png" alt="Logo" width={180} height={180} />
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
           Forgot Password
         </h1>
         <p className="text-gray-600">
-          Enter your email address and we&apos;ll send you an OTP to reset your password.
+         Enter your email to reset your password
         </p>
       </div>
 

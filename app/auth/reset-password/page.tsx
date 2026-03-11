@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useResetPasswordMutation } from "@/store/api/authApi";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearForgotPasswordEmail } from "@/features/auth/authSlice";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import type { ApiError } from "@/types/auth.types";
 
 const resetPasswordSchema = z
@@ -86,6 +87,11 @@ export default function ResetPasswordPage() {
         minHeight: "356px",
       }}
     >
+      {/* Logo */}
+      <div className="flex justify-center mb-6">
+        <Image src="/auth/logo.png" alt="Logo" width={180} height={180} />
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">

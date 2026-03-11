@@ -113,12 +113,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
   return (
     <>
-    <header className="flex h-[97px] items-center justify-between border-b-[1.11px] border-[#E5E7EB] bg-[#FFFFFF] px-6">
+    <header className="flex h-[86px] items-center justify-end border-b-[1.11px] border-[#E5E7EB] bg-[#FFFFFF] px-6">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden mr-2"
+        className="lg:hidden mr-auto"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5" />
@@ -146,16 +146,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-3 py-2 h-auto overflow-hidden rounded-xl hover:bg-gray-100 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 focus:ring-offset-0">
-                <Avatar className="h-[68px] w-[68px] ring-1 ring-emerald-200">
+                <div className="hidden sm:flex flex-col items-start text-sm">
+                  <span className="font-semibold text-gray-900 leading-tight">{profile?.name || user?.name || "Admin"}</span>
+                  <span className="text-xs text-gray-400 leading-tight">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
+                </div>
+                <Avatar className="h-[48px] w-[48px] ring-1 ring-emerald-200">
                   <AvatarImage src={profile?.image} alt={profile?.name || user?.name || "Admin"} />
                   <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold">
                     {profile?.name ? getInitials(profile.name) : user?.name ? getInitials(user.name) : "AD"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="hidden sm:flex flex-col items-start text-sm">
-                  <span className="font-semibold text-gray-900 leading-tight">{profile?.name || user?.name || "Admin"}</span>
-                  <span className="text-xs text-gray-400 leading-tight">{profile?.email || user?.email || "admin@sportcoach.ai"}</span>
-                </div>
                 <ChevronDown className="hidden sm:block h-4 w-4 text-gray-400 ml-0.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -185,15 +185,15 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           </DropdownMenu>
         ) : (
           <Button variant="ghost" className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
+            <div className="hidden sm:flex flex-col items-start text-sm">
+              <span className="font-medium text-gray-900">Admin</span>
+              <span className="text-xs text-gray-500">admin@sportcoach.ai</span>
+            </div>
             <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
               <AvatarFallback className="bg-emerald-100 text-emerald-700">
                 AD
               </AvatarFallback>
             </Avatar>
-            <div className="hidden sm:flex flex-col items-start text-sm">
-              <span className="font-medium text-gray-900">Admin</span>
-              <span className="text-xs text-gray-500">admin@sportcoach.ai</span>
-            </div>
           </Button>
         )}
       </div>
