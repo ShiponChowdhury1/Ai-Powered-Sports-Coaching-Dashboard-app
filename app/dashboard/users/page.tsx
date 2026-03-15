@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
-import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -30,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import {
   Users,
   UserCheck,
@@ -39,16 +36,11 @@ import {
   Filter,
   Search,
   Eye,
-  SquarePen,
-  Trash2,
 } from "lucide-react";
 import {
   useGetUsersQuery,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
   type ApiUser,
 } from "@/store/api/usersApi";
-import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
   Active: "bg-emerald-100 text-emerald-700",
@@ -59,22 +51,12 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { data: users = [], isLoading } = useGetUsersQuery({ search: searchQuery || undefined });
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
+  const { data: usersData, isLoading, isError } = useGetUsersQuery({ search: searchQuery || undefined });
+  const users = Array.isArray(usersData) ? usersData : [];
 
   // Modal states
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
-
-  // Edit form state
-  const [editForm, setEditForm] = useState({
-    name: "",
-    phone: "",
-    is_active: true,
-  });
 
   const filteredUsers = users.filter((user) => {
     if (statusFilter === "all") return true;
@@ -86,54 +68,13 @@ export default function UsersPage() {
   const stats = {
     total: users.length,
     active: users.filter((u) => u.is_active).length,
-    paid: users.filter((u) => u.plan !== null).length,
-    admins: users.filter((u) => u.role === "Admin").length,
+    paid: users.filter((u) => Boolean(u.plan)).length,
+    admins: users.filter((u) => u.role?.toUpperCase() === "ADMIN").length,
   };
 
   const handleView = (user: ApiUser) => {
     setSelectedUser(user);
     setViewModalOpen(true);
-  };
-
-  const handleEdit = (user: ApiUser) => {
-    setSelectedUser(user);
-    setEditForm({
-      name: user.name,
-      phone: user.phone || "",
-      is_active: user.is_active,
-    });
-    setEditModalOpen(true);
-  };
-
-  const handleDelete = (user: ApiUser) => {
-    setSelectedUser(user);
-    setDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (selectedUser) {
-      try {
-        await deleteUser(selectedUser.id).unwrap();
-        toast.success("User deleted successfully");
-        setDeleteModalOpen(false);
-        setSelectedUser(null);
-      } catch {
-        toast.error("Failed to delete user");
-      }
-    }
-  };
-
-  const saveEdit = async () => {
-    if (selectedUser) {
-      try {
-        await updateUser({ userId: selectedUser.id, data: editForm }).unwrap();
-        toast.success("User updated successfully");
-        setEditModalOpen(false);
-        setSelectedUser(null);
-      } catch {
-        toast.error("Failed to update user");
-      }
-    }
   };
 
   const getInitials = (name: string) => {
@@ -149,6 +90,17 @@ export default function UsersPage() {
       <div className="space-y-6">
         <PageHeader title="Users Management" description="Manage and monitor all platform users" />
         <div className="flex items-center justify-center h-64 text-gray-500">Loading users...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Users Management" description="Manage and monitor all platform users" />
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Failed to load users. Please check API access token and users endpoint response.
+        </div>
       </div>
     );
   }
@@ -241,7 +193,10 @@ export default function UsersPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className={user.role === "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}>
+                  <Badge
+                    variant="secondary"
+                    className={user.role?.toUpperCase() === "ADMIN" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"}
+                  >
                     {user.role}
                   </Badge>
                 </TableCell>
@@ -257,12 +212,6 @@ export default function UsersPage() {
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleView(user)}>
                       <Eye className="h-4 w-4" style={{ color: "#0F744F" }} />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
-                      <SquarePen className="h-4 w-4" style={{ color: "#0F744F" }} />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(user)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 </TableCell>
@@ -333,55 +282,6 @@ export default function UsersPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Edit User Modal */}
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input id="edit-name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-phone">Phone</Label>
-              <Input id="edit-phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={editForm.is_active ? "active" : "inactive"}
-                onValueChange={(value) => setEditForm({ ...editForm, is_active: value === "active" })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter className="flex gap-3">
-            <Button onClick={saveEdit} className="bg-[#1D4ED8] hover:bg-[#1e40af] flex-1">Save Changes</Button>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmModal
-        open={deleteModalOpen}
-        onOpenChange={setDeleteModalOpen}
-        title="Delete User"
-        description={`Are you sure you want to delete ${selectedUser?.name}? This action cannot be undone.`}
-        confirmText="Delete"
-        variant="destructive"
-        onConfirm={confirmDelete}
-      />
     </div>
   );
 }

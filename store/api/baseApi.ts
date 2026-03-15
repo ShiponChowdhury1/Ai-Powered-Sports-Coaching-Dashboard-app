@@ -14,13 +14,18 @@ const getCsrfToken = () => {
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
   credentials: 'include', // Important for CSRF cookies
-  prepareHeaders: (headers) => {
+  prepareHeaders: (headers, { endpoint }) => {
     // Get CSRF token from cookie
     const csrfToken = getCsrfToken();
     if (csrfToken) {
       headers.set("X-CSRFToken", csrfToken);
     }
     
+    const publicAuthEndpoints = new Set(["login", "sendOtp", "verifyOtp", "resetPassword"]);
+    if (publicAuthEndpoints.has(endpoint)) {
+      return headers;
+    }
+
     // Get auth token from localStorage only for protected routes
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     
