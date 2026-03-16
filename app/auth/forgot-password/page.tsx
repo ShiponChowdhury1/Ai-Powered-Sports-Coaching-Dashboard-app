@@ -46,7 +46,31 @@ export default function ForgotPasswordPage() {
       router.push("/auth/verify-otp");
     } catch (error) {
       const apiError = error as ApiError;
-      toast.error(apiError.data?.message || "Failed to send OTP. Please try again.");
+
+      if (apiError.status === "FETCH_ERROR") {
+        toast.error("Network/CORS error: could not reach the API from this origin.");
+        return;
+      }
+
+      if (apiError.status === "PARSING_ERROR") {
+        toast.error("Server returned an unexpected response format.");
+        return;
+      }
+
+      if (apiError.status === "TIMEOUT_ERROR") {
+        toast.error("Request timed out. Please try again.");
+        return;
+      }
+
+      const errorMessage =
+        apiError.data?.message ||
+        apiError.data?.detail ||
+        apiError.data?.error ||
+        (Array.isArray(apiError.data?.non_field_errors) ? apiError.data.non_field_errors[0] : null) ||
+        apiError.error ||
+        "Failed to send OTP. Please try again.";
+
+      toast.error(errorMessage);
     }
   };
 

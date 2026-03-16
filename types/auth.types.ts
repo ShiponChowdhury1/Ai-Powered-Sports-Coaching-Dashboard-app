@@ -79,9 +79,13 @@ export interface User {
 
 // API Error Type
 export interface ApiError {
-  data: {
+  data?: {
     errors?: Record<string, string[]>;
     message?: string;
+    detail?: string;
+    error?: string;
+    non_field_errors?: string[];
   };
-  status: number;
+  error?: string;
+  status?: number | "FETCH_ERROR" | "PARSING_ERROR" | "TIMEOUT_ERROR" | "CUSTOM_ERROR";
 }

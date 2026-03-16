@@ -108,7 +108,21 @@ export default function VerifyOtpPage() {
       router.push("/auth/reset-password");
     } catch (error) {
       const apiError = error as ApiError;
-      toast.error(apiError.data?.message || "Invalid OTP. Please try again.");
+
+      if (apiError.status === "FETCH_ERROR") {
+        toast.error("Network/CORS error: could not reach the API from this origin.");
+        return;
+      }
+
+      const errorMessage =
+        apiError.data?.message ||
+        apiError.data?.detail ||
+        apiError.data?.error ||
+        (Array.isArray(apiError.data?.non_field_errors) ? apiError.data.non_field_errors[0] : null) ||
+        apiError.error ||
+        "Invalid OTP. Please try again.";
+
+      toast.error(errorMessage);
     }
   };
 
@@ -123,7 +137,21 @@ export default function VerifyOtpPage() {
       toast.success(result.message || "OTP resent to your email!");
     } catch (error) {
       const apiError = error as ApiError;
-      toast.error(apiError.data?.message || "Failed to resend OTP. Please try again.");
+
+      if (apiError.status === "FETCH_ERROR") {
+        toast.error("Network/CORS error: could not reach the API from this origin.");
+        return;
+      }
+
+      const errorMessage =
+        apiError.data?.message ||
+        apiError.data?.detail ||
+        apiError.data?.error ||
+        (Array.isArray(apiError.data?.non_field_errors) ? apiError.data.non_field_errors[0] : null) ||
+        apiError.error ||
+        "Failed to resend OTP. Please try again.";
+
+      toast.error(errorMessage);
     }
   };
 
