@@ -13,7 +13,9 @@ const getCsrfToken = () => {
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-  credentials: 'include', // Important for CSRF cookies
+  // Use same-origin credentials to avoid cross-origin CORS credential conflicts.
+  // This app uses bearer tokens for auth, so cross-site cookies are not required.
+  credentials: 'same-origin',
   prepareHeaders: (headers, { endpoint }) => {
     // Get CSRF token from cookie
     const csrfToken = getCsrfToken();

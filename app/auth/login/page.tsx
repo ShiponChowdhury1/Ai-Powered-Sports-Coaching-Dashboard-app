@@ -69,15 +69,35 @@ export default function LoginPage() {
       toast.success(result.message || "Logged in successfully!");
       router.push("/dashboard");
     } catch (error: unknown) {
-      const apiError = error as { data?: Record<string, unknown>; status?: number };
+      const apiError = error as {
+        status?: number | "FETCH_ERROR" | "PARSING_ERROR" | "TIMEOUT_ERROR" | "CUSTOM_ERROR";
+        error?: string;
+        data?: Record<string, unknown>;
+      };
       const data = apiError?.data;
 
-      // Backend returns errors in different formats: { detail: ... }, { error: ... }, { non_field_errors: [...] }
+      if (apiError?.status === "FETCH_ERROR") {
+        toast.error("Network/CORS error: could not reach the API from this origin.");
+        return;
+      }
+
+      if (apiError?.status === "PARSING_ERROR") {
+        toast.error("Server returned an unexpected response format.");
+        return;
+      }
+
+      if (apiError?.status === "TIMEOUT_ERROR") {
+        toast.error("Request timed out. Please try again.");
+        return;
+      }
+
+      // Backend can return errors in different formats: { detail }, { error }, { non_field_errors: [...] }
       const errorMessage =
         (data?.detail as string) ||
         (data?.error as string) ||
         (Array.isArray(data?.non_field_errors) ? (data.non_field_errors as string[])[0] : null) ||
         (data?.message as string) ||
+        apiError?.error ||
         "Invalid email or password. Please check your credentials and try again.";
 
       toast.error(errorMessage);
